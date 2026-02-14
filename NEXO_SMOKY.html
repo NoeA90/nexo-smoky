@@ -1,0 +1,1182 @@
+
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>NEXO SMOKY • Herramientas</title>
+  <style>
+    :root{
+      --bg:#070A12;
+      --panel:#0E1420;
+      --panel2:#0B111B;
+      --border:#1C2740;
+      --txt:#EAF0FF;
+      --muted:#9AA7C2;
+      --accent:#9AFF5C;
+      --accent2:#5CF6FF;
+      --danger:#FF5C5C;
+      --warn:#FFD24A;
+      --shadow:0 10px 30px rgba(0,0,0,.35);
+      --r:16px;
+    }
+    *{box-sizing:border-box;font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,Arial}
+    body{
+      margin:0;
+      background:radial-gradient(900px 500px at 12% 10%, rgba(154,255,92,.08), transparent 60%),
+                 radial-gradient(900px 500px at 88% 0%, rgba(92,246,255,.07), transparent 55%),
+                 var(--bg);
+      color:var(--txt);
+      min-height:100vh;
+    }
+    a{color:inherit}
+    .wrap{max-width:1200px;margin:0 auto;padding:22px}
+    .top{
+      display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;
+      padding:16px 18px;border:1px solid var(--border);border-radius:var(--r);background:rgba(14,20,32,.85);
+      box-shadow:var(--shadow);backdrop-filter: blur(8px);
+    }
+    .brand{display:flex;align-items:center;gap:14px}
+    .logo{
+      width:44px;height:44px;border-radius:14px;
+      background:linear-gradient(135deg, rgba(154,255,92,.95), rgba(92,246,255,.95));
+      display:grid;place-items:center;color:#071015;font-weight:1000;letter-spacing:.5px;
+      box-shadow:0 12px 22px rgba(0,0,0,.35);
+    }
+    .brand h1{margin:0;font-size:18px;letter-spacing:.5px}
+    .brand .sub{color:var(--muted);font-size:12px;margin-top:2px}
+    .nav{display:flex;gap:10px;flex-wrap:wrap}
+    .btn{
+      border:1px solid var(--border);
+      background:rgba(11,17,27,.6);
+      color:var(--txt);
+      padding:10px 12px;border-radius:12px;
+      font-weight:900;font-size:13px;cursor:pointer;
+      transition:.15s ease;
+    }
+    .btn:hover{transform:translateY(-1px);filter:brightness(1.06)}
+    .btn.primary{background:linear-gradient(180deg, rgba(154,255,92,.95), rgba(200,255,155,.95));color:#071015;border:none}
+    .btn.cyan{border-color:#2c6b6b}
+    .btn.red{border-color:#6b2c2c}
+    .btn.warn{border-color:#7a5a16}
+    .btn.ghost{background:transparent}
+    .pill{
+      display:inline-flex;gap:8px;align-items:center;
+      padding:7px 10px;border-radius:999px;
+      border:1px solid var(--border);background:rgba(11,17,27,.55);
+      color:var(--muted);font-size:12px;font-weight:900;
+    }
+    .grid{
+      display:grid;grid-template-columns:1.05fr .95fr;gap:16px;margin-top:16px;
+    }
+    @media (max-width:980px){.grid{grid-template-columns:1fr}}
+    .card{
+      border:1px solid var(--border);border-radius:var(--r);
+      background:rgba(14,20,32,.85);
+      box-shadow:var(--shadow);backdrop-filter: blur(8px);
+      overflow:hidden;
+    }
+    .cardHeader{padding:14px 16px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;gap:10px;align-items:center;flex-wrap:wrap}
+    .cardHeader h2{margin:0;font-size:14px;letter-spacing:.3px}
+    .cardHeader .hint{color:var(--muted);font-size:12px}
+    .cardBody{padding:14px 16px}
+    .homeActions{display:flex;gap:12px;flex-wrap:wrap}
+    .bigAction{
+      flex:1;min-width:260px;
+      padding:16px;border:1px solid var(--border);border-radius:16px;
+      background:linear-gradient(180deg, rgba(11,17,27,.6), rgba(11,17,27,.25));
+      cursor:pointer;transition:.15s ease;
+    }
+    .bigAction:hover{transform:translateY(-2px);filter:brightness(1.07)}
+    .bigAction .title{font-weight:1000;font-size:15px}
+    .bigAction .desc{margin-top:6px;color:var(--muted);font-size:12px;line-height:1.35}
+    .hidden{display:none !important}
+    .row{display:flex;gap:12px;flex-wrap:wrap;align-items:center}
+    input[type="file"]{
+      width:100%;
+      padding:12px;border-radius:12px;
+      border:1px dashed #2A3647;
+      background:rgba(11,17,27,.45);
+      color:var(--muted);
+    }
+    input[type="text"], input[type="number"], select, textarea{
+      padding:10px 12px;border-radius:12px;
+      border:1px solid var(--border);
+      background:rgba(11,17,27,.55);color:var(--txt);
+      font-weight:800;font-size:13px;outline:none;
+    }
+    textarea{min-height:86px;resize:vertical;font-weight:700}
+    .kpi{
+      display:grid;grid-template-columns:repeat(4,minmax(160px,1fr));gap:12px;margin-top:12px
+    }
+    @media (max-width:980px){.kpi{grid-template-columns:repeat(2,minmax(160px,1fr));}}
+    .kpi .box{
+      border:1px solid var(--border);border-radius:16px;
+      background:rgba(11,17,27,.5);
+      padding:12px;
+    }
+    .kpi .lbl{font-size:12px;color:var(--muted);font-weight:900}
+    .kpi .val{font-size:26px;font-weight:1000;margin-top:6px}
+    .green{color:var(--accent)} .cyan{color:var(--accent2)} .redTxt{color:var(--danger)} .warnTxt{color:var(--warn)}
+    .muted{color:var(--muted)}
+    .divider{height:1px;background:var(--border);margin:14px 0}
+    .toast{
+      position:fixed;right:18px;bottom:18px;
+      background:rgba(14,20,32,.92);
+      border:1px solid #2A3647;
+      padding:12px 14px;border-radius:14px;
+      opacity:0;transform:translateY(16px);
+      pointer-events:none;transition:.22s ease;
+      display:flex;gap:10px;align-items:center;max-width:min(520px, calc(100vw - 36px));
+      box-shadow:var(--shadow);
+    }
+    .toast.show{opacity:1;transform:translateY(0);pointer-events:auto}
+    .spinner{
+      width:16px;height:16px;border-radius:50%;
+      border:2px solid #44546a;border-top-color:var(--accent);
+      animation:spin 1s linear infinite;
+    }
+    @keyframes spin{to{transform:rotate(360deg)}}
+    .progress{
+      width:220px;height:10px;border-radius:999px;
+      border:1px solid var(--border);background:rgba(11,17,27,.55);
+      overflow:hidden;
+    }
+    .bar{height:100%;width:0%;background:linear-gradient(90deg, var(--accent), var(--accent2));transition:width .12s ease}
+    /* Table / list */
+    table{
+      width:100%;
+      border-collapse:collapse;
+      border:1px solid var(--border);
+      border-radius:16px;overflow:hidden;
+      background:rgba(11,17,27,.55);
+    }
+    th,td{padding:10px;border-bottom:1px solid var(--border);font-size:13px;vertical-align:top}
+    th{position:sticky;top:0;background:rgba(14,20,32,.98);z-index:1;color:#C8FF9B;text-align:left;font-weight:1000}
+    tr:hover td{background:rgba(20,28,39,.65)}
+    .badge{
+      display:inline-flex;align-items:center;gap:6px;
+      padding:4px 10px;border-radius:999px;
+      font-size:12px;font-weight:1000;border:1px solid;white-space:nowrap
+    }
+    .b-active{color:var(--accent);border-color:#2c6b2c;background:#0C1B12}
+    .b-contact{color:var(--danger);border-color:#6b2c2c;background:#1B0C0C}
+    .b-proc{color:var(--warn);border-color:#7a5a16;background:#1B1407}
+    .b-ok{color:var(--accent2);border-color:#2c6b6b;background:#07181A}
+    .cards{display:grid;grid-template-columns:repeat(3,minmax(250px,1fr));gap:12px;margin-top:12px}
+    @media(max-width:980px){.cards{grid-template-columns:repeat(2,minmax(240px,1fr));}}
+    @media(max-width:640px){.cards{grid-template-columns:1fr;}}
+    .cCard{
+      border:1px solid var(--border);border-radius:16px;background:rgba(11,17,27,.55);
+      padding:12px;display:flex;flex-direction:column;gap:10px;
+    }
+    .cTop{display:flex;justify-content:space-between;gap:10px}
+    .cAlias{font-weight:1000}
+    .cPhone{color:var(--muted);font-size:12px}
+    .cMeta{font-size:12px;color:var(--muted);line-height:1.35}
+    .cActions{display:flex;gap:8px;flex-wrap:wrap}
+    .chk{transform:scale(1.15)}
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="top">
+      <div class="brand">
+        <div class="logo">NX</div>
+        <div>
+          <h1>NEXO SMOKY</h1>
+          <div class="sub">Herramientas para contactos • Whaticket • Revinculación</div>
+        </div>
+      </div>
+      <div class="nav">
+        <button class="btn ghost" id="goHome">Inicio</button>
+        <button class="btn" id="goVCF">VCF → Whaticket CSV</button>
+        <button class="btn" id="goMasivo">Gestor Masivo</button>
+      </div>
+    </div>
+
+    <!-- HOME -->
+    <div id="screenHome" class="grid">
+      <div class="card">
+        <div class="cardHeader">
+          <h2>Panel principal</h2>
+          <span class="pill">Offline • Corre en Chrome • Sin servidores</span>
+        </div>
+        <div class="cardBody">
+          <div class="homeActions">
+            <div class="bigAction" id="homeToVCF" role="button" tabindex="0">
+              <div class="title">1) Convertir VCF a CSV compatible Whaticket</div>
+              <div class="desc">
+                Cargás un <b>.vcf</b> y te descarga un <b>.csv</b> con formato:
+                <b>number,name,email,tags,metadata</b>.
+              </div>
+            </div>
+            <div class="bigAction" id="homeToMasivo" role="button" tabindex="0">
+              <div class="title">2) Gestor de Contactos Masivo (mejorado)</div>
+              <div class="desc">
+                Importá <b>CSV de contactos Whaticket</b> (33k+ sin colgar), filtrá, buscá,
+                marcá estados, etiquetas, notas, y exportá lo que necesites.
+              </div>
+            </div>
+          </div>
+          <div class="divider"></div>
+          <div class="muted" style="font-size:13px;line-height:1.5">
+            <b>Tips anti-cuelgue:</b> esta versión procesa importaciones en <b>worker</b>, muestra progreso y
+            renderiza <b>solo página actual</b>. Para archivos muy grandes, usá vista <b>Tabla</b> (más liviana).
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="cardHeader">
+          <h2>Qué podés hacer con NEXO SMOKY</h2>
+          <span class="pill">Flujo recomendado</span>
+        </div>
+        <div class="cardBody" style="line-height:1.55;color:var(--muted);font-size:13px">
+          <ol style="margin:0;padding-left:18px">
+            <li><b>Convertís</b> agendas (VCF) a CSV para subir a Whaticket.</li>
+            <li><b>Importás</b> contactos exportados de Whaticket (CSV) al Gestor Masivo.</li>
+            <li><b>Segmentás</b> por estado (A CONTACTAR / EN PROCESO / RECUPERADO / JUGANDO), tags, o búsqueda.</li>
+            <li><b>Marcás</b> en lote: estado + etiquetas + nota para operadores.</li>
+            <li><b>Exportás</b> solo lo filtrado o la selección para tu próximo proceso.</li>
+          </ol>
+          <div class="divider"></div>
+          <div class="pill">Guardado local con IndexedDB (más robusto que localStorage)</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- VCF CONVERTER -->
+    <div id="screenVCF" class="hidden">
+      <div class="card">
+        <div class="cardHeader">
+          <h2>VCF → CSV compatible Whaticket</h2>
+          <div class="row">
+            <div class="pill">Salida: number,name,email,tags,metadata</div>
+            <button class="btn" id="vcfReset">Limpiar</button>
+          </div>
+        </div>
+        <div class="cardBody">
+          <div class="row">
+            <div style="flex:1;min-width:280px">
+              <div class="muted" style="font-size:12px;font-weight:900;margin-bottom:8px">Archivo VCF</div>
+              <input type="file" id="vcfFile" accept=".vcf,text/vcard"/>
+            </div>
+            <div style="width:260px;min-width:240px">
+              <div class="muted" style="font-size:12px;font-weight:900;margin-bottom:8px">Tags (opcional)</div>
+              <input type="text" id="vcfTags" placeholder="ej: nexo,importado"/>
+            </div>
+            <div style="width:220px;min-width:200px">
+              <div class="muted" style="font-size:12px;font-weight:900;margin-bottom:8px">Prefijo país (opcional)</div>
+              <input type="text" id="vcfCountry" placeholder="ej: 54"/>
+            </div>
+          </div>
+
+          <div class="divider"></div>
+
+          <div class="row" style="justify-content:space-between">
+            <div class="row">
+              <button class="btn primary" id="vcfConvert">Convertir y Descargar</button>
+              <span class="pill">Procesa en worker • no bloquea Chrome</span>
+            </div>
+            <div class="row" style="align-items:center">
+              <div class="progress"><div class="bar" id="vcfBar"></div></div>
+              <span class="pill" id="vcfProg">0%</span>
+            </div>
+          </div>
+
+          <div class="divider"></div>
+          <div class="muted" id="vcfSummary">Sin procesar.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- MASIVO -->
+    <div id="screenMasivo" class="hidden">
+      <div class="card">
+        <div class="cardHeader">
+          <h2>Gestor de Contactos Masivo</h2>
+          <div class="row">
+            <span class="pill" id="dbState">DB: —</span>
+            <button class="btn warn" id="dbExportRaw">Exportar DB (backup)</button>
+            <button class="btn red" id="dbClear">Borrar DB</button>
+          </div>
+        </div>
+
+        <div class="cardBody">
+          <div class="row">
+            <div style="flex:1;min-width:280px">
+              <div class="muted" style="font-size:12px;font-weight:900;margin-bottom:8px">Importar CSV Whaticket</div>
+              <input type="file" id="csvContacts" accept=".csv,text/csv"/>
+              <div class="muted" style="font-size:12px;margin-top:8px;line-height:1.35">
+                Encabezados esperados: <b>number,name,email,tags,metadata</b><br/>
+                (si vienen con otros nombres, igual intenta detectar: phone/telefono, nombre, etc.)
+              </div>
+            </div>
+
+            <div style="width:420px;min-width:300px">
+              <div class="muted" style="font-size:12px;font-weight:900;margin-bottom:8px">Acciones rápidas</div>
+              <div class="row">
+                <button class="btn primary" id="importCSVBtn">Importar (rápido)</button>
+                <button class="btn" id="refreshBtn">Refrescar vista</button>
+                <button class="btn cyan" id="exportFilteredBtn">Exportar filtrado</button>
+              </div>
+              <div class="row" style="margin-top:10px;align-items:center">
+                <div class="progress" style="width:240px"><div class="bar" id="masivoBar"></div></div>
+                <span class="pill" id="masivoProg">0%</span>
+                <label class="pill"><input class="chk" type="checkbox" id="appendMode"> Append</label>
+              </div>
+              <div class="muted" id="importInfo" style="font-size:12px;margin-top:8px">—</div>
+            </div>
+          </div>
+
+          <div class="divider"></div>
+
+          <div class="row" style="justify-content:space-between">
+            <div class="row" style="flex-wrap:wrap">
+              <input type="text" id="qSearch" placeholder="Buscar alias, nombre, teléfono, tags..." style="min-width:320px;flex:1"/>
+              <select id="fStatus" style="min-width:220px">
+                <option value="">Estado: (todos)</option>
+                <option value="A CONTACTAR">A CONTACTAR</option>
+                <option value="EN PROCESO">EN PROCESO</option>
+                <option value="RECUPERADO">RECUPERADO</option>
+                <option value="JUGANDO">JUGANDO</option>
+                <option value="NO INTERESA">NO INTERESA</option>
+              </select>
+              <input type="text" id="fTag" placeholder="Tag exacto (opcional)" style="min-width:220px"/>
+              <select id="viewMode" style="min-width:170px">
+                <option value="table">Vista: Tabla (recomendada)</option>
+                <option value="cards">Vista: Cards</option>
+              </select>
+            </div>
+
+            <div class="row">
+              <span class="pill">Página</span>
+              <button class="btn" id="prevPage">◀</button>
+              <span class="pill" id="pageInfo">1/1</span>
+              <button class="btn" id="nextPage">▶</button>
+              <select id="pageSize" style="min-width:140px">
+                <option value="50">50 / pág</option>
+                <option value="100">100 / pág</option>
+                <option value="200">200 / pág</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="kpi">
+            <div class="box"><div class="lbl">Contactos en DB</div><div class="val green" id="kTotal">0</div></div>
+            <div class="box"><div class="lbl">Filtrados</div><div class="val cyan" id="kFiltered">0</div></div>
+            <div class="box"><div class="lbl">Seleccionados</div><div class="val warnTxt" id="kSelected">0</div></div>
+            <div class="box"><div class="lbl">Vista actual</div><div class="val" style="font-size:18px;margin-top:10px" id="kView">Tabla</div></div>
+          </div>
+
+          <div class="divider"></div>
+
+          <div class="row" style="justify-content:space-between">
+            <div class="row" style="flex-wrap:wrap">
+              <button class="btn" id="selAllPage">Seleccionar pág</button>
+              <button class="btn" id="selNone">Limpiar selección</button>
+              <button class="btn red" id="deleteSel">Borrar seleccionados</button>
+            </div>
+            <div class="row" style="flex-wrap:wrap">
+              <select id="bulkStatus" style="min-width:220px">
+                <option value="">Cambiar estado…</option>
+                <option value="A CONTACTAR">A CONTACTAR</option>
+                <option value="EN PROCESO">EN PROCESO</option>
+                <option value="RECUPERADO">RECUPERADO</option>
+                <option value="JUGANDO">JUGANDO</option>
+                <option value="NO INTERESA">NO INTERESA</option>
+              </select>
+              <input type="text" id="bulkTags" placeholder="Agregar tags (coma)" style="min-width:240px"/>
+              <button class="btn primary" id="applyBulk">Aplicar a selección</button>
+            </div>
+          </div>
+
+          <div id="results"></div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="toast" id="toast">
+    <div class="spinner"></div>
+    <div id="toastText">Procesando...</div>
+  </div>
+
+<script>
+/* =========================================================
+   Toast / Progress
+========================================================= */
+const toast = document.getElementById('toast');
+const toastText = document.getElementById('toastText');
+let toastTimer=null;
+function showToast(text, duration=2200){
+  if(toastTimer){clearTimeout(toastTimer); toastTimer=null;}
+  toastText.textContent=text;
+  toast.classList.add('show');
+  toastTimer=setTimeout(()=>{toast.classList.remove('show'); toastTimer=null;}, duration);
+}
+function setBar(el, pct){ el.style.width = Math.max(0, Math.min(100, pct)) + '%'; }
+function esc(s){ return String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+
+/* =========================================================
+   Screen routing
+========================================================= */
+const screens = {
+  home: document.getElementById('screenHome'),
+  vcf: document.getElementById('screenVCF'),
+  masivo: document.getElementById('screenMasivo'),
+};
+function showScreen(key){
+  Object.values(screens).forEach(s=>s.classList.add('hidden'));
+  screens[key].classList.remove('hidden');
+  if(key==='masivo') refreshView();
+}
+document.getElementById('goHome').onclick = ()=>showScreen('home');
+document.getElementById('goVCF').onclick  = ()=>showScreen('vcf');
+document.getElementById('goMasivo').onclick = ()=>showScreen('masivo');
+document.getElementById('homeToVCF').onclick = ()=>showScreen('vcf');
+document.getElementById('homeToMasivo').onclick = ()=>showScreen('masivo');
+
+/* =========================================================
+   Worker factory (VCF/CSV parsing)
+========================================================= */
+function makeWorker(){
+  const src = `
+  self.onmessage = async (e) => {
+    const {type, text, options} = e.data || {};
+    try{
+      if(type==='parseVCF'){
+        const tags = (options?.tags||'').trim();
+        const country = (options?.country||'').trim();
+        const out = [];
+        const lines = String(text||'').replace(/\\r\\n/g,'\\n').replace(/\\r/g,'\\n').split('\\n');
+        // parse by vcard blocks
+        let card = [];
+        let total = lines.length;
+        for(let i=0;i<lines.length;i++){
+          const line = lines[i];
+          if(/^BEGIN:VCARD/i.test(line)){ card = [line]; }
+          else if(card.length){ card.push(line); }
+          if(/^END:VCARD/i.test(line) && card.length){
+            const joined = card.join('\\n');
+            const fn = (joined.match(/\\nFN(?:;[^:]*)?:(.*)/i)||[])[1] || '';
+            const email = (joined.match(/\\nEMAIL(?:;[^:]*)?:(.*)/i)||[])[1] || '';
+            let tel = (joined.match(/\\nTEL(?:;[^:]*)?:(.*)/i)||[])[1] || '';
+            tel = String(tel).trim();
+            // clean phone
+            let num = tel.replace(/[^0-9+]/g,'');
+            // if no + and country provided, prepend
+            if(num && !num.startsWith('+') && country){
+              // avoid double country
+              if(!num.startsWith(country)) num = country + num;
+              num = '+' + num.replace(/^\\+/, '');
+            }
+            // if starts with 00, turn to +
+            if(num.startsWith('00')) num = '+' + num.slice(2);
+            // if starts with + but has spaces already cleaned
+            if(num && !num.startsWith('+') && num.length>6) num = '+'+num;
+
+            out.push({
+              number: num.replace(/^\\+/,''), // Whaticket suele aceptar sin +
+              name: String(fn||'').trim() || (num ? num : ''),
+              email: String(email||'').trim(),
+              tags: tags,
+              metadata: ''
+            });
+            card = [];
+          }
+          if(i % 4000 === 0){
+            self.postMessage({type:'progress', pct: Math.round(i*100/total)});
+            await new Promise(r=>setTimeout(r,0));
+          }
+        }
+        self.postMessage({type:'done', rows: out});
+      }
+
+      if(type==='parseCSV'){
+        const t = String(text||'').replace(/\\uFEFF/g,'');
+        const lines = t.replace(/\\r\\n/g,'\\n').replace(/\\r/g,'\\n').split('\\n').filter(l=>l.trim()!=='');
+        if(!lines.length) return self.postMessage({type:'done', rows:[], headers:[]});
+
+        // sep=
+        let start = 0;
+        let delim = ',';
+        const first = lines[0].trim();
+        if(/^sep=;/i.test(first)){ delim=';'; start=1; }
+        if(/^sep=,/i.test(first)){ delim=','; start=1; }
+
+        // heuristic
+        if(start===0){
+          const sample = lines.slice(0,5).join('\\n');
+          const commas = (sample.match(/,/g)||[]).length;
+          const semis  = (sample.match(/;/g)||[]).length;
+          delim = semis>commas ? ';' : ',';
+        }
+
+        function parseLine(line){
+          const res=[];
+          let cur=''; let inQ=false;
+          for(let i=0;i<line.length;i++){
+            const ch=line[i];
+            if(ch === '"'){
+              if(inQ && line[i+1]==='"'){ cur+='"'; i++; }
+              else inQ=!inQ;
+              continue;
+            }
+            if(ch===delim && !inQ){ res.push(cur); cur=''; continue; }
+            cur+=ch;
+          }
+          res.push(cur);
+          return res;
+        }
+
+        const headers = parseLine(lines[start]).map(h=>String(h||'').trim());
+        const rows=[];
+        const total = lines.length - (start+1);
+
+        for(let i=start+1, idx=0;i<lines.length;i++, idx++){
+          const cols = parseLine(lines[i]);
+          rows.push(cols);
+          if(idx % 6000 === 0){
+            self.postMessage({type:'progress', pct: Math.round(idx*100/Math.max(1,total)), delim, headers});
+            await new Promise(r=>setTimeout(r,0));
+          }
+        }
+        self.postMessage({type:'done', rows, headers, delim});
+      }
+    }catch(err){
+      self.postMessage({type:'error', message: String(err?.message||err)});
+    }
+  };`;
+  const blob = new Blob([src], {type:'text/javascript'});
+  return new Worker(URL.createObjectURL(blob));
+}
+
+/* =========================================================
+   CSV download helpers
+========================================================= */
+function csvEscape(v){
+  const s = String(v ?? '');
+  return '"' + s.replace(/"/g,'""') + '"';
+}
+function downloadText(text, name, mime='text/plain;charset=utf-8;'){
+  const bom = mime.includes('csv') ? '\\uFEFF' : '';
+  const blob = new Blob([bom + text], {type:mime});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = name;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+}
+
+/* =========================================================
+   Tool 1: VCF -> Whaticket CSV
+========================================================= */
+const vcfBar = document.getElementById('vcfBar');
+const vcfProg = document.getElementById('vcfProg');
+const vcfSummary = document.getElementById('vcfSummary');
+let vcfLastRows = [];
+document.getElementById('vcfReset').onclick = ()=>{
+  document.getElementById('vcfFile').value = '';
+  document.getElementById('vcfTags').value = '';
+  document.getElementById('vcfCountry').value = '';
+  vcfLastRows = [];
+  setBar(vcfBar,0); vcfProg.textContent='0%';
+  vcfSummary.textContent='Sin procesar.';
+};
+
+document.getElementById('vcfConvert').onclick = async ()=>{
+  const f = document.getElementById('vcfFile').files[0];
+  if(!f) return showToast('Seleccioná un VCF', 2200);
+
+  showToast('Convirtiendo VCF…', 6000);
+  setBar(vcfBar, 2); vcfProg.textContent='2%';
+
+  const text = await f.text();
+  const w = makeWorker();
+
+  await new Promise((resolve,reject)=>{
+    w.onmessage = (e)=>{
+      const msg = e.data || {};
+      if(msg.type==='progress'){
+        setBar(vcfBar, msg.pct);
+        vcfProg.textContent = msg.pct + '%';
+      }
+      if(msg.type==='done'){
+        vcfLastRows = msg.rows || [];
+        setBar(vcfBar, 100);
+        vcfProg.textContent = '100%';
+        resolve();
+      }
+      if(msg.type==='error'){ reject(new Error(msg.message)); }
+    };
+    w.postMessage({type:'parseVCF', text, options:{
+      tags: document.getElementById('vcfTags').value,
+      country: document.getElementById('vcfCountry').value
+    }});
+  });
+
+  // build CSV
+  const header = 'number,name,email,tags,metadata\\n';
+  let csv = header;
+  for(const r of vcfLastRows){
+    csv += [csvEscape(r.number), csvEscape(r.name), csvEscape(r.email), csvEscape(r.tags), csvEscape(r.metadata)].join(',') + '\\n';
+  }
+  const name = (f.name || 'contactos').replace(/\\.vcf$/i,'') + '_whaticket.csv';
+  downloadText(csv, name, 'text/csv;charset=utf-8;');
+  vcfSummary.innerHTML = `Listo: <b>${vcfLastRows.length.toLocaleString('es-AR')}</b> contactos exportados.`;
+  showToast('CSV descargado', 1600);
+};
+
+/* =========================================================
+   Tool 2: Gestor Masivo (IndexedDB + render paginado)
+========================================================= */
+const DB_NAME = 'nexo_smoky_db';
+const DB_VER  = 1;
+const STORE   = 'contacts';
+
+let db = null;
+
+// In-memory cache (para filtros rápidos)
+let CACHE = {
+  list: [],            // todos los contactos
+  filtered: [],        // filtrados
+  selected: new Set(), // ids seleccionados
+  page: 1,
+  pageSize: 50,
+  view: 'table'
+};
+
+function openDB(){
+  return new Promise((resolve,reject)=>{
+    const req = indexedDB.open(DB_NAME, DB_VER);
+    req.onupgradeneeded = (e)=>{
+      const d = req.result;
+      if(!d.objectStoreNames.contains(STORE)){
+        const os = d.createObjectStore(STORE, {keyPath:'id', autoIncrement:true});
+        os.createIndex('number','number',{unique:false});
+        os.createIndex('name','name',{unique:false});
+        os.createIndex('status','status',{unique:false});
+        os.createIndex('tags','tags',{unique:false});
+      }
+    };
+    req.onsuccess = ()=>resolve(req.result);
+    req.onerror = ()=>reject(req.error);
+  });
+}
+
+function tx(storeName, mode='readonly'){
+  const t = db.transaction(storeName, mode);
+  return t.objectStore(storeName);
+}
+
+async function dbCount(){
+  return await new Promise((resolve,reject)=>{
+    const req = tx(STORE).count();
+    req.onsuccess=()=>resolve(req.result||0);
+    req.onerror=()=>reject(req.error);
+  });
+}
+
+async function dbGetAll(){
+  return await new Promise((resolve,reject)=>{
+    const req = tx(STORE).getAll();
+    req.onsuccess=()=>resolve(req.result||[]);
+    req.onerror=()=>reject(req.error);
+  });
+}
+
+async function dbClearAll(){
+  return await new Promise((resolve,reject)=>{
+    const req = tx(STORE,'readwrite').clear();
+    req.onsuccess=()=>resolve();
+    req.onerror=()=>reject(req.error);
+  });
+}
+
+async function dbPutMany(objs){
+  // Inserta en batches para no congelar
+  const B = 1200;
+  for(let i=0;i<objs.length;i+=B){
+    const chunk = objs.slice(i, i+B);
+    await new Promise((resolve,reject)=>{
+      const store = tx(STORE,'readwrite');
+      for(const o of chunk) store.add(o);
+      store.transaction.oncomplete = ()=>resolve();
+      store.transaction.onerror = ()=>reject(store.transaction.error);
+    });
+  }
+}
+
+async function dbDeleteMany(ids){
+  const B=1200;
+  for(let i=0;i<ids.length;i+=B){
+    const chunk = ids.slice(i,i+B);
+    await new Promise((resolve,reject)=>{
+      const store = tx(STORE,'readwrite');
+      for(const id of chunk) store.delete(id);
+      store.transaction.oncomplete=()=>resolve();
+      store.transaction.onerror=()=>reject(store.transaction.error);
+    });
+  }
+}
+
+async function dbUpdateMany(ids, patchFn){
+  // patchFn(contact)->contact
+  const B=600;
+  for(let i=0;i<ids.length;i+=B){
+    const chunk = ids.slice(i,i+B);
+    await new Promise((resolve,reject)=>{
+      const store = tx(STORE,'readwrite');
+      let pending = chunk.length;
+      if(!pending) return resolve();
+      chunk.forEach(id=>{
+        const getReq = store.get(id);
+        getReq.onsuccess=()=>{
+          const obj = getReq.result;
+          if(obj){
+            const upd = patchFn(obj);
+            store.put(upd);
+          }
+          pending--;
+          if(pending===0) resolve();
+        };
+        getReq.onerror=()=>{ pending--; if(pending===0) resolve(); };
+      });
+      store.transaction.onerror=()=>reject(store.transaction.error);
+    });
+  }
+}
+
+/* ---------- Parsing CSV contacts ---------- */
+function normalizeTags(tags){
+  if(!tags) return '';
+  return String(tags).split(',')
+    .map(t=>t.trim()).filter(Boolean)
+    .join(',');
+}
+function detectIdx(headersLower, names){
+  for(let i=0;i<headersLower.length;i++){
+    const h = headersLower[i];
+    if(names.some(n => h===n || h.includes(n))) return i;
+  }
+  return -1;
+}
+function parseContactsFromWorker(headers, rows){
+  const hl = headers.map(h=>String(h||'').toLowerCase().trim());
+
+  // expected
+  const iNumber = detectIdx(hl, ['number','telefono','tel','phone']);
+  const iName   = detectIdx(hl, ['name','nombre']);
+  const iEmail  = detectIdx(hl, ['email']);
+  const iTags   = detectIdx(hl, ['tags','etiquetas']);
+  const iMeta   = detectIdx(hl, ['metadata','meta','data']);
+
+  const out = [];
+  for(const cols of rows){
+    const number = String(cols[iNumber] ?? '').trim();
+    const name   = String(cols[iName] ?? '').trim();
+    if(!number && !name) continue;
+
+    out.push({
+      number: number.replace(/^\+/,''),
+      name,
+      email: String(cols[iEmail] ?? '').trim(),
+      tags: normalizeTags(String(cols[iTags] ?? '').trim()),
+      metadata: String(cols[iMeta] ?? '').trim(),
+      status: 'A CONTACTAR',
+      note: '',
+      createdAt: Date.now()
+    });
+  }
+  return out;
+}
+
+/* ---------- Filters / Render ---------- */
+function statusBadge(status){
+  const s = String(status||'').toUpperCase();
+  if(s==='JUGANDO') return `<span class="badge b-active">JUGANDO</span>`;
+  if(s==='A CONTACTAR') return `<span class="badge b-contact">A CONTACTAR</span>`;
+  if(s==='EN PROCESO') return `<span class="badge b-proc">EN PROCESO</span>`;
+  if(s==='RECUPERADO') return `<span class="badge b-ok">RECUPERADO</span>`;
+  if(s==='NO INTERESA') return `<span class="badge b-contact">NO INTERESA</span>`;
+  return `<span class="badge b-proc">${esc(s||'-')}</span>`;
+}
+function applyFilters(){
+  const q = String(document.getElementById('qSearch').value||'').toLowerCase().trim();
+  const st = String(document.getElementById('fStatus').value||'').trim();
+  const tag = String(document.getElementById('fTag').value||'').toLowerCase().trim();
+
+  let arr = CACHE.list;
+  if(st) arr = arr.filter(x => String(x.status||'') === st);
+  if(tag) arr = arr.filter(x => (String(x.tags||'').toLowerCase().split(',').map(t=>t.trim())).includes(tag));
+  if(q){
+    arr = arr.filter(x => {
+      const hay = (String(x.name||'')+' '+String(x.number||'')+' '+String(x.tags||'')+' '+String(x.metadata||'')+' '+String(x.note||'')).toLowerCase();
+      return hay.includes(q);
+    });
+  }
+  CACHE.filtered = arr;
+  if(CACHE.page > Math.max(1, Math.ceil(arr.length / CACHE.pageSize))) CACHE.page = 1;
+}
+
+function updateKPIs(){
+  document.getElementById('kTotal').textContent = CACHE.list.length.toLocaleString('es-AR');
+  document.getElementById('kFiltered').textContent = CACHE.filtered.length.toLocaleString('es-AR');
+  document.getElementById('kSelected').textContent = CACHE.selected.size.toLocaleString('es-AR');
+  document.getElementById('kView').textContent = (CACHE.view==='table' ? 'Tabla' : 'Cards');
+}
+
+function render(){
+  applyFilters();
+  updateKPIs();
+
+  const totalPages = Math.max(1, Math.ceil(CACHE.filtered.length / CACHE.pageSize));
+  const page = Math.min(CACHE.page, totalPages);
+  CACHE.page = page;
+
+  document.getElementById('pageInfo').textContent = `${page}/${totalPages}`;
+  document.getElementById('viewMode').value = CACHE.view;
+  document.getElementById('pageSize').value = String(CACHE.pageSize);
+
+  const start = (page-1)*CACHE.pageSize;
+  const end = start + CACHE.pageSize;
+  const slice = CACHE.filtered.slice(start, end);
+
+  const results = document.getElementById('results');
+  if(CACHE.view === 'table'){
+    let html = `
+      <table>
+        <thead>
+          <tr>
+            <th style="width:44px"><input class="chk" type="checkbox" id="chkAllThisPage"/></th>
+            <th>Nombre</th>
+            <th>Teléfono</th>
+            <th>Estado</th>
+            <th>Tags</th>
+            <th>Nota</th>
+            <th style="width:160px">Acciones</th>
+          </tr>
+        </thead>
+        <tbody>`;
+    for(const r of slice){
+      const checked = CACHE.selected.has(r.id) ? 'checked' : '';
+      html += `
+        <tr>
+          <td><input class="chk rowChk" data-id="${r.id}" type="checkbox" ${checked}/></td>
+          <td><b>${esc(r.name||'')}</b><div class="muted" style="font-size:12px">${esc(r.metadata||'')}</div></td>
+          <td>${esc(r.number ? ('+'+String(r.number).replace(/^\+/,'') ) : '')}</td>
+          <td>${statusBadge(r.status)}</td>
+          <td>${esc(r.tags||'')}</td>
+          <td>${esc(r.note||'')}</td>
+          <td>
+            <button class="btn" data-act="edit" data-id="${r.id}">Editar</button>
+            <button class="btn red" data-act="del" data-id="${r.id}">Borrar</button>
+          </td>
+        </tr>`;
+    }
+    html += `</tbody></table>
+      <div class="muted" style="font-size:12px;margin-top:10px">
+        Mostrando <b>${slice.length.toLocaleString('es-AR')}</b> de <b>${CACHE.filtered.length.toLocaleString('es-AR')}</b> filtrados (paginado).
+      </div>`;
+    results.innerHTML = html;
+  }else{
+    let html = `<div class="cards">`;
+    for(const r of slice){
+      const checked = CACHE.selected.has(r.id) ? 'checked' : '';
+      html += `
+        <div class="cCard">
+          <div class="cTop">
+            <div>
+              <div class="cAlias">${esc(r.name||'')}</div>
+              <div class="cPhone">${esc(r.number ? ('+'+String(r.number).replace(/^\+/,'') ) : '')}</div>
+            </div>
+            <div style="display:flex;flex-direction:column;align-items:flex-end;gap:8px">
+              <input class="chk rowChk" data-id="${r.id}" type="checkbox" ${checked}/>
+              ${statusBadge(r.status)}
+            </div>
+          </div>
+          <div class="cMeta"><b>Tags:</b> ${esc(r.tags||'')}<br/><b>Nota:</b> ${esc(r.note||'') || '<span class="muted">—</span>'}</div>
+          <div class="cActions">
+            <button class="btn" data-act="edit" data-id="${r.id}">Editar</button>
+            <button class="btn cyan" data-act="copy" data-id="${r.id}">Copiar WhatsApp</button>
+            <button class="btn red" data-act="del" data-id="${r.id}">Borrar</button>
+          </div>
+        </div>`;
+    }
+    html += `</div>
+      <div class="muted" style="font-size:12px;margin-top:10px">
+        Mostrando <b>${slice.length.toLocaleString('es-AR')}</b> de <b>${CACHE.filtered.length.toLocaleString('es-AR')}</b> filtrados (paginado).
+      </div>`;
+    results.innerHTML = html;
+  }
+
+  // wire events (delegación)
+  results.querySelectorAll('.rowChk').forEach(chk=>{
+    chk.onchange = ()=>{
+      const id = Number(chk.getAttribute('data-id'));
+      if(chk.checked) CACHE.selected.add(id);
+      else CACHE.selected.delete(id);
+      updateKPIs();
+    };
+  });
+
+  const chkAll = document.getElementById('chkAllThisPage');
+  if(chkAll){
+    // mark based on all selected in slice
+    chkAll.checked = slice.length>0 && slice.every(x=>CACHE.selected.has(x.id));
+    chkAll.onchange = ()=>{
+      for(const r of slice){
+        if(chkAll.checked) CACHE.selected.add(r.id);
+        else CACHE.selected.delete(r.id);
+      }
+      render(); // refresh checkboxes state
+    };
+  }
+
+  results.querySelectorAll('button[data-act]').forEach(btn=>{
+    btn.onclick = async ()=>{
+      const act = btn.getAttribute('data-act');
+      const id = Number(btn.getAttribute('data-id'));
+      if(act==='del'){
+        if(!confirm('¿Borrar este contacto?')) return;
+        await dbDeleteMany([id]);
+        await reloadCache();
+        showToast('Contacto borrado', 1400);
+      }
+      if(act==='copy'){
+        const r = CACHE.list.find(x=>x.id===id);
+        const num = r?.number ? String(r.number).replace(/^\+/,'') : '';
+        const url = num ? `https://wa.me/${num}` : '';
+        try{
+          await navigator.clipboard.writeText(url || num);
+          showToast('Copiado', 1200);
+        }catch{
+          showToast('No se pudo copiar', 1600);
+        }
+      }
+      if(act==='edit'){
+        const r = CACHE.list.find(x=>x.id===id);
+        if(!r) return;
+        const newStatus = prompt('Estado (A CONTACTAR / EN PROCESO / RECUPERADO / JUGANDO / NO INTERESA):', r.status||'A CONTACTAR');
+        if(newStatus===null) return;
+        const newTags = prompt('Tags (coma):', r.tags||'');
+        if(newTags===null) return;
+        const newNote = prompt('Nota:', r.note||'');
+        if(newNote===null) return;
+
+        await dbUpdateMany([id], (o)=>{
+          o.status = String(newStatus||'').trim() || o.status;
+          o.tags = normalizeTags(newTags);
+          o.note = String(newNote||'').trim();
+          return o;
+        });
+        await reloadCache();
+        showToast('Actualizado', 1200);
+      }
+    };
+  });
+}
+
+/* ---------- Load / Refresh ---------- */
+async function reloadCache(){
+  const list = await dbGetAll();
+  // stable sort by id
+  list.sort((a,b)=> (a.id||0) - (b.id||0));
+  CACHE.list = list;
+  // clean selection (remove deleted ids)
+  const ids = new Set(list.map(x=>x.id));
+  CACHE.selected.forEach(id=>{ if(!ids.has(id)) CACHE.selected.delete(id); });
+  render();
+  document.getElementById('dbState').textContent = `DB: ${list.length.toLocaleString('es-AR')} contactos`;
+}
+
+async function refreshView(){
+  if(!db) return;
+  await reloadCache();
+}
+
+/* ---------- Import CSV ---------- */
+const masivoBar = document.getElementById('masivoBar');
+const masivoProg = document.getElementById('masivoProg');
+const importInfo = document.getElementById('importInfo');
+
+document.getElementById('importCSVBtn').onclick = async ()=>{
+  const f = document.getElementById('csvContacts').files[0];
+  if(!f) return showToast('Seleccioná un CSV de contactos', 2400);
+
+  const append = document.getElementById('appendMode').checked;
+  showToast('Importando CSV…', 8000);
+  setBar(masivoBar, 2); masivoProg.textContent='2%';
+  importInfo.textContent = 'Leyendo archivo…';
+
+  const text = await f.text();
+  const w = makeWorker();
+
+  let parsedHeaders = [];
+  let parsedRows = [];
+
+  await new Promise((resolve,reject)=>{
+    w.onmessage = (e)=>{
+      const msg = e.data || {};
+      if(msg.type==='progress'){
+        setBar(masivoBar, msg.pct);
+        masivoProg.textContent = msg.pct + '%';
+        if(msg.headers?.length) parsedHeaders = msg.headers;
+        importInfo.textContent = `Parseando… ${msg.pct}% (delim "${msg.delim||'?'}")`;
+      }
+      if(msg.type==='done'){
+        parsedHeaders = msg.headers || [];
+        parsedRows = msg.rows || [];
+        setBar(masivoBar, 100);
+        masivoProg.textContent='100%';
+        resolve();
+      }
+      if(msg.type==='error'){ reject(new Error(msg.message)); }
+    };
+    w.postMessage({type:'parseCSV', text});
+  });
+
+  importInfo.textContent = 'Construyendo contactos…';
+  const contacts = parseContactsFromWorker(parsedHeaders, parsedRows);
+
+  if(!append){
+    await dbClearAll();
+    CACHE.selected.clear();
+  }
+
+  // Insert
+  importInfo.textContent = `Insertando ${contacts.length.toLocaleString('es-AR')}…`;
+  // update bar during insert
+  const total = contacts.length;
+  const B = 1200;
+  for(let i=0;i<contacts.length;i+=B){
+    const chunk = contacts.slice(i,i+B);
+    await dbPutMany(chunk);
+    const pct = Math.round((Math.min(i+B,total)*100)/Math.max(1,total));
+    setBar(masivoBar, pct);
+    masivoProg.textContent = pct + '%';
+    importInfo.textContent = `Insertando… ${pct}%`;
+    await new Promise(r=>setTimeout(r,0));
+  }
+
+  await reloadCache();
+  importInfo.textContent = `Listo: ${contacts.length.toLocaleString('es-AR')} importados.`;
+  showToast('Importación completa', 1800);
+};
+
+/* ---------- Export filtered ---------- */
+document.getElementById('exportFilteredBtn').onclick = ()=>{
+  if(!CACHE.list.length) return showToast('No hay contactos en DB', 2000);
+
+  applyFilters();
+  const arr = CACHE.filtered;
+
+  let csv = 'number,name,email,tags,metadata\\n';
+  for(const r of arr){
+    csv += [csvEscape(r.number), csvEscape(r.name), csvEscape(r.email), csvEscape(r.tags), csvEscape(r.metadata)].join(',') + '\\n';
+  }
+  downloadText(csv, `whaticket_filtrado_${new Date().toISOString().slice(0,10)}.csv`, 'text/csv;charset=utf-8;');
+  showToast('Exportado', 1400);
+};
+
+/* ---------- Backup / Clear ---------- */
+document.getElementById('dbClear').onclick = async ()=>{
+  if(!confirm('Esto borra TODOS los contactos guardados en este navegador. ¿Continuar?')) return;
+  await dbClearAll();
+  CACHE.selected.clear();
+  await reloadCache();
+  showToast('DB borrada', 1400);
+};
+
+document.getElementById('dbExportRaw').onclick = async ()=>{
+  const all = await dbGetAll();
+  downloadText(JSON.stringify(all), `nexo_smoky_backup_${new Date().toISOString().slice(0,10)}.json`, 'application/json;charset=utf-8;');
+  showToast('Backup descargado', 1400);
+};
+
+/* ---------- Bulk actions ---------- */
+document.getElementById('selAllPage').onclick = ()=>{
+  applyFilters();
+  const totalPages = Math.max(1, Math.ceil(CACHE.filtered.length / CACHE.pageSize));
+  const page = Math.min(CACHE.page, totalPages);
+  const start = (page-1)*CACHE.pageSize;
+  const slice = CACHE.filtered.slice(start, start + CACHE.pageSize);
+  slice.forEach(r=>CACHE.selected.add(r.id));
+  render();
+  showToast('Página seleccionada', 1200);
+};
+document.getElementById('selNone').onclick = ()=>{
+  CACHE.selected.clear();
+  render();
+  showToast('Selección limpia', 1200);
+};
+document.getElementById('deleteSel').onclick = async ()=>{
+  if(!CACHE.selected.size) return showToast('No hay seleccionados', 1500);
+  if(!confirm(`¿Borrar ${CACHE.selected.size} contactos seleccionados?`)) return;
+  await dbDeleteMany([...CACHE.selected]);
+  CACHE.selected.clear();
+  await reloadCache();
+  showToast('Borrados', 1400);
+};
+document.getElementById('applyBulk').onclick = async ()=>{
+  if(!CACHE.selected.size) return showToast('No hay seleccionados', 1500);
+  const st = String(document.getElementById('bulkStatus').value||'').trim();
+  const tagsAdd = normalizeTags(document.getElementById('bulkTags').value||'');
+  if(!st && !tagsAdd) return showToast('Elegí estado y/o tags', 1700);
+
+  showToast('Aplicando cambios…', 5000);
+  const ids = [...CACHE.selected];
+  await dbUpdateMany(ids, (o)=>{
+    if(st) o.status = st;
+    if(tagsAdd){
+      const cur = new Set(String(o.tags||'').split(',').map(t=>t.trim()).filter(Boolean));
+      tagsAdd.split(',').map(t=>t.trim()).filter(Boolean).forEach(t=>cur.add(t));
+      o.tags = [...cur].join(',');
+    }
+    return o;
+  });
+  await reloadCache();
+  showToast('Cambios aplicados', 1400);
+};
+
+/* ---------- Pagination / filters ---------- */
+document.getElementById('prevPage').onclick = ()=>{ CACHE.page=Math.max(1, CACHE.page-1); render(); };
+document.getElementById('nextPage').onclick = ()=>{
+  const total = Math.max(1, Math.ceil(CACHE.filtered.length / CACHE.pageSize));
+  CACHE.page = Math.min(total, CACHE.page+1);
+  render();
+};
+document.getElementById('pageSize').onchange = (e)=>{ CACHE.pageSize = Number(e.target.value||50); CACHE.page=1; render(); };
+document.getElementById('viewMode').onchange = (e)=>{ CACHE.view = e.target.value; render(); };
+['qSearch','fStatus','fTag'].forEach(id=>{
+  document.getElementById(id).addEventListener('input', ()=>{
+    CACHE.page=1;
+    // debounce
+    clearTimeout(window.__nexoDeb);
+    window.__nexoDeb=setTimeout(render, 120);
+  });
+});
+
+document.getElementById('refreshBtn').onclick = ()=>reloadCache();
+
+/* ---------- Boot ---------- */
+(async ()=>{
+  db = await openDB();
+  const count = await dbCount();
+  document.getElementById('dbState').textContent = `DB: ${count.toLocaleString('es-AR')} contactos`;
+  await reloadCache();
+})().catch(err=>{
+  console.error(err);
+  document.getElementById('dbState').textContent = 'DB: ERROR';
+  showToast('No se pudo abrir IndexedDB', 3000);
+});
+
+/* Start at home */
+showScreen('home');
+</script>
+</body>
+</html>
