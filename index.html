@@ -1,1182 +1,2342 @@
+import os, textwrap, re, json, datetime, pathlib
 
-<!doctype html>
+out_path = "/mnt/data/NEXO_SMOKY_v2.html"
+
+html = r"""<!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="utf-8"/>
-  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>NEXO SMOKY • Herramientas</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
   <style>
     :root{
-      --bg:#070A12;
-      --panel:#0E1420;
-      --panel2:#0B111B;
-      --border:#1C2740;
-      --txt:#EAF0FF;
-      --muted:#9AA7C2;
-      --accent:#9AFF5C;
-      --accent2:#5CF6FF;
-      --danger:#FF5C5C;
-      --warn:#FFD24A;
-      --shadow:0 10px 30px rgba(0,0,0,.35);
-      --r:16px;
+      --bg:#0b0f17;
+      --bg2:#0f172a;
+      --card:#131a24;
+      --card2:#1e293b;
+      --panel:#0d131d;
+      --border:#1c2533;
+      --muted:#9aa5b7;
+      --text:#f1f5f9;
+      --text2:#cbd5e1;
+
+      --accent:#9aff5c;         /* verde */
+      --accent2:#5cf6ff;        /* cian */
+      --accent3:#8b5cf6;        /* violeta */
+      --danger:#ff5c5c;
+      --warn:#f59e0b;
+
+      --shadow: 0 20px 60px rgba(0,0,0,.45);
+      --radius: 18px;
+      --radius2: 14px;
     }
-    *{box-sizing:border-box;font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,Arial}
+
+    *{box-sizing:border-box;font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, Arial; }
     body{
       margin:0;
-      background:radial-gradient(900px 500px at 12% 10%, rgba(154,255,92,.08), transparent 60%),
-                 radial-gradient(900px 500px at 88% 0%, rgba(92,246,255,.07), transparent 55%),
-                 var(--bg);
-      color:var(--txt);
       min-height:100vh;
+      background: radial-gradient(1200px 700px at 30% -10%, rgba(139,92,246,.25), transparent 65%),
+                  radial-gradient(1100px 650px at 90% 0%, rgba(92,246,255,.18), transparent 60%),
+                  linear-gradient(180deg, var(--bg) 0%, #05070c 100%);
+      color:var(--text);
+      overflow-x:hidden;
     }
-    a{color:inherit}
-    .wrap{max-width:1200px;margin:0 auto;padding:22px}
-    .top{
-      display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;
-      padding:16px 18px;border:1px solid var(--border);border-radius:var(--r);background:rgba(14,20,32,.85);
-      box-shadow:var(--shadow);backdrop-filter: blur(8px);
+
+    /* ---------- App Shell ---------- */
+    .wrap{
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 26px 18px 40px;
     }
-    .brand{display:flex;align-items:center;gap:14px}
+
+    .brand{
+      display:flex;
+      align-items:center;
+      gap:16px;
+      margin-bottom:18px;
+    }
     .logo{
-      width:44px;height:44px;border-radius:14px;
-      background:linear-gradient(135deg, rgba(154,255,92,.95), rgba(92,246,255,.95));
-      display:grid;place-items:center;color:#071015;font-weight:1000;letter-spacing:.5px;
-      box-shadow:0 12px 22px rgba(0,0,0,.35);
-    }
-    .brand h1{margin:0;font-size:18px;letter-spacing:.5px}
-    .brand .sub{color:var(--muted);font-size:12px;margin-top:2px}
-    .nav{display:flex;gap:10px;flex-wrap:wrap}
-    .btn{
-      border:1px solid var(--border);
-      background:rgba(11,17,27,.6);
-      color:var(--txt);
-      padding:10px 12px;border-radius:12px;
-      font-weight:900;font-size:13px;cursor:pointer;
-      transition:.15s ease;
-    }
-    .btn:hover{transform:translateY(-1px);filter:brightness(1.06)}
-    .btn.primary{background:linear-gradient(180deg, rgba(154,255,92,.95), rgba(200,255,155,.95));color:#071015;border:none}
-    .btn.cyan{border-color:#2c6b6b}
-    .btn.red{border-color:#6b2c2c}
-    .btn.warn{border-color:#7a5a16}
-    .btn.ghost{background:transparent}
-    .pill{
-      display:inline-flex;gap:8px;align-items:center;
-      padding:7px 10px;border-radius:999px;
-      border:1px solid var(--border);background:rgba(11,17,27,.55);
-      color:var(--muted);font-size:12px;font-weight:900;
-    }
-    .grid{
-      display:grid;grid-template-columns:1.05fr .95fr;gap:16px;margin-top:16px;
-    }
-    @media (max-width:980px){.grid{grid-template-columns:1fr}}
-    .card{
-      border:1px solid var(--border);border-radius:var(--r);
-      background:rgba(14,20,32,.85);
-      box-shadow:var(--shadow);backdrop-filter: blur(8px);
+      width:58px;height:58px;border-radius:18px;
+      background: linear-gradient(135deg, rgba(154,255,92,.95), rgba(92,246,255,.75), rgba(139,92,246,.55));
+      box-shadow: 0 12px 30px rgba(0,0,0,.35);
+      display:flex;align-items:center;justify-content:center;
+      position:relative;
       overflow:hidden;
     }
-    .cardHeader{padding:14px 16px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;gap:10px;align-items:center;flex-wrap:wrap}
-    .cardHeader h2{margin:0;font-size:14px;letter-spacing:.3px}
-    .cardHeader .hint{color:var(--muted);font-size:12px}
-    .cardBody{padding:14px 16px}
-    .homeActions{display:flex;gap:12px;flex-wrap:wrap}
-    .bigAction{
-      flex:1;min-width:260px;
-      padding:16px;border:1px solid var(--border);border-radius:16px;
-      background:linear-gradient(180deg, rgba(11,17,27,.6), rgba(11,17,27,.25));
-      cursor:pointer;transition:.15s ease;
+    .logo:before{
+      content:'';
+      position:absolute;inset:-40%;
+      background: conic-gradient(from 180deg, rgba(255,255,255,.18), transparent 35%, rgba(255,255,255,.10) 60%, transparent);
+      animation: spin 6s linear infinite;
     }
-    .bigAction:hover{transform:translateY(-2px);filter:brightness(1.07)}
-    .bigAction .title{font-weight:1000;font-size:15px}
-    .bigAction .desc{margin-top:6px;color:var(--muted);font-size:12px;line-height:1.35}
-    .hidden{display:none !important}
-    .row{display:flex;gap:12px;flex-wrap:wrap;align-items:center}
-    input[type="file"]{
+    @keyframes spin{ to{ transform: rotate(360deg);} }
+    .logo i{
+      position:relative;
+      font-size:24px;
+      color:#0b1020;
+      text-shadow: 0 2px 0 rgba(255,255,255,.25);
+      filter: drop-shadow(0 6px 14px rgba(0,0,0,.25));
+    }
+    .brand h1{
+      margin:0;
+      font-size: 22px;
+      font-weight: 900;
+      letter-spacing:.3px;
+    }
+    .brand .sub{
+      margin-top:2px;
+      color:var(--text2);
+      font-size: 13px;
+      font-weight:700;
+      opacity:.9;
+    }
+
+    .homeCard{
+      background: linear-gradient(180deg, rgba(19,26,36,.9), rgba(19,26,36,.78));
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding: 18px;
+      position:relative;
+      overflow:hidden;
+    }
+    .homeCard:before{
+      content:'';
+      position:absolute;inset:0;
+      background: radial-gradient(650px 280px at 20% 0%, rgba(154,255,92,.12), transparent 60%),
+                  radial-gradient(650px 280px at 80% 0%, rgba(92,246,255,.10), transparent 60%);
+      pointer-events:none;
+    }
+
+    .homeGrid{
+      position:relative;
+      display:grid;
+      grid-template-columns: repeat(2, minmax(260px, 1fr));
+      gap:14px;
+      margin-top:12px;
+    }
+    .tile{
+      background: rgba(13,19,29,.85);
+      border: 1px solid #243246;
+      border-radius: var(--radius2);
+      padding: 14px;
+      display:flex;
+      gap:12px;
+      align-items:flex-start;
+      transition: transform .2s ease, filter .2s ease, border-color .2s ease;
+      cursor:pointer;
+      user-select:none;
+    }
+    .tile:hover{
+      transform: translateY(-2px);
+      border-color: rgba(154,255,92,.45);
+      filter: brightness(1.05);
+    }
+    .tile .ic{
+      width:42px;height:42px;border-radius:14px;
+      display:flex;align-items:center;justify-content:center;
+      background: rgba(154,255,92,.12);
+      border:1px solid rgba(154,255,92,.25);
+      flex: 0 0 auto;
+    }
+    .tile .ic.cyan{
+      background: rgba(92,246,255,.10);
+      border-color: rgba(92,246,255,.25);
+    }
+    .tile .ic i{ color: var(--accent); }
+    .tile .ic.cyan i{ color: var(--accent2); }
+    .tile h3{
+      margin:0;
+      font-size: 14px;
+      font-weight: 950;
+    }
+    .tile p{
+      margin:6px 0 0 0;
+      color:var(--text2);
+      font-size: 12px;
+      line-height: 1.35;
+    }
+
+    .btnRow{
+      position:relative;
+      margin-top:14px;
+      display:flex;
+      gap:10px;
+      flex-wrap:wrap;
+      align-items:center;
+    }
+    .btn{
+      border: 1px solid #2a3647;
+      background: rgba(13,19,29,.9);
+      color: var(--text);
+      border-radius: 14px;
+      padding: 10px 14px;
+      font-weight: 900;
+      font-size: 13px;
+      cursor:pointer;
+      display:inline-flex;
+      align-items:center;
+      gap:10px;
+      transition: transform .2s ease, filter .2s ease, border-color .2s ease;
+      user-select:none;
+    }
+    .btn:hover{ transform: translateY(-1px); filter: brightness(1.06); }
+    .btn.primary{
+      background: linear-gradient(180deg, rgba(154,255,92,.98), rgba(200,255,155,.9));
+      color:#0b1020;
+      border-color: rgba(154,255,92,.35);
+    }
+    .btn.cyan{
+      background: linear-gradient(180deg, rgba(92,246,255,.95), rgba(150,252,255,.82));
+      color:#0b1020;
+      border-color: rgba(92,246,255,.35);
+    }
+    .btn.ghost{
+      background: transparent;
+      border-color:#243246;
+      color: var(--text2);
+    }
+
+    .hint{
+      color:var(--text2);
+      font-size: 12px;
+      margin-top:10px;
+      line-height:1.45;
+    }
+
+    /* ---------- Views ---------- */
+    .view{ display:none; }
+    .view.active{ display:block; }
+
+    /* ---------- VCF Tool ---------- */
+    .toolCard{
+      margin-top:16px;
+      background: rgba(19,26,36,.92);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding: 18px;
+    }
+
+    .row{
+      display:flex;
+      gap:14px;
+      flex-wrap:wrap;
+      align-items:flex-start;
+    }
+    .box{
+      flex:1;
+      min-width: 280px;
+      background: rgba(13,19,29,.9);
+      border: 1px solid #243246;
+      border-radius: var(--radius2);
+      padding: 14px;
+    }
+    .secTitle{
+      font-size: 12px;
+      letter-spacing:.35px;
+      color: rgba(200,255,155,.95);
+      font-weight: 950;
+      text-transform: uppercase;
+      margin: 0 0 10px 0;
+    }
+    input[type=file], input[type=text], input[type=number]{
       width:100%;
-      padding:12px;border-radius:12px;
-      border:1px dashed #2A3647;
-      background:rgba(11,17,27,.45);
-      color:var(--muted);
+      padding: 12px;
+      background: #0d131d;
+      border: 1px dashed #2a3647;
+      border-radius: 12px;
+      color: var(--text2);
+      font-weight: 800;
+      outline:none;
     }
-    input[type="text"], input[type="number"], select, textarea{
-      padding:10px 12px;border-radius:12px;
-      border:1px solid var(--border);
-      background:rgba(11,17,27,.55);color:var(--txt);
-      font-weight:800;font-size:13px;outline:none;
+    input[type=text], input[type=number]{
+      border-style: solid;
+      border-color:#243246;
+      color: var(--text);
     }
-    textarea{min-height:86px;resize:vertical;font-weight:700}
+    input[type=number]{ max-width: 220px; }
+    .inline{
+      display:flex;
+      gap:10px;
+      align-items:center;
+      flex-wrap:wrap;
+      margin-top:10px;
+    }
+    label.chk{
+      display:flex;
+      gap:8px;
+      align-items:center;
+      color: var(--text2);
+      font-size: 12px;
+      font-weight: 900;
+    }
+    label.chk input{ width:auto; }
+
+    .kpiRow{
+      display:grid;
+      grid-template-columns: repeat(4, minmax(180px, 1fr));
+      gap:12px;
+      margin-top:14px;
+    }
     .kpi{
-      display:grid;grid-template-columns:repeat(4,minmax(160px,1fr));gap:12px;margin-top:12px
+      background:#0d131d;
+      border:1px solid #243246;
+      border-radius: 16px;
+      padding: 12px;
     }
-    @media (max-width:980px){.kpi{grid-template-columns:repeat(2,minmax(160px,1fr));}}
-    .kpi .box{
-      border:1px solid var(--border);border-radius:16px;
-      background:rgba(11,17,27,.5);
-      padding:12px;
+    .kpi .l{ color: var(--muted); font-size: 12px; font-weight: 900; }
+    .kpi .v{ font-size: 26px; font-weight: 1000; margin-top:6px; }
+    .kpi .v.green{ color: var(--accent); }
+    .kpi .v.cyan{ color: var(--accent2); }
+    .kpi .v.red{ color: var(--danger); }
+
+    .note{
+      margin-top: 12px;
+      background: #0d131d;
+      border: 1px solid #243246;
+      border-radius: 14px;
+      padding: 12px;
+      color: var(--text2);
+      font-size: 12px;
+      line-height: 1.4;
     }
-    .kpi .lbl{font-size:12px;color:var(--muted);font-weight:900}
-    .kpi .val{font-size:26px;font-weight:1000;margin-top:6px}
-    .green{color:var(--accent)} .cyan{color:var(--accent2)} .redTxt{color:var(--danger)} .warnTxt{color:var(--warn)}
-    .muted{color:var(--muted)}
-    .divider{height:1px;background:var(--border);margin:14px 0}
+
+    /* ---------- Toast ---------- */
     .toast{
-      position:fixed;right:18px;bottom:18px;
-      background:rgba(14,20,32,.92);
-      border:1px solid #2A3647;
-      padding:12px 14px;border-radius:14px;
-      opacity:0;transform:translateY(16px);
-      pointer-events:none;transition:.22s ease;
-      display:flex;gap:10px;align-items:center;max-width:min(520px, calc(100vw - 36px));
-      box-shadow:var(--shadow);
+      position:fixed;
+      right:18px;
+      bottom:18px;
+      background:#16202c;
+      padding:12px 14px;
+      border-radius:14px;
+      opacity:0;
+      transform:translateY(16px);
+      pointer-events:none;
+      transition:.22s;
+      display:flex;
+      gap:10px;
+      align-items:center;
+      border:1px solid #2a3647;
+      max-width:520px;
+      z-index: 9999;
     }
     .toast.show{opacity:1;transform:translateY(0);pointer-events:auto}
     .spinner{
       width:16px;height:16px;border-radius:50%;
       border:2px solid #44546a;border-top-color:var(--accent);
-      animation:spin 1s linear infinite;
+      animation:spin2 1s linear infinite;
     }
-    @keyframes spin{to{transform:rotate(360deg)}}
-    .progress{
-      width:220px;height:10px;border-radius:999px;
-      border:1px solid var(--border);background:rgba(11,17,27,.55);
-      overflow:hidden;
+    @keyframes spin2{to{transform:rotate(360deg)}}
+
+    /* ---------- Embedded Gestor Masivo styles (compact) ---------- */
+    /* We keep the original behavior, but reduce DOM churn + show import progress. */
+    .gmHidden{ display:none !important; }
+    .gmContainer{ max-width: 1600px; margin: 0 auto; padding: 0; }
+    .gmNavbar{
+      background: rgba(30,41,59,.75);
+      border:1px solid #243246;
+      padding: 14px 16px;
+      border-radius: 16px;
+      margin-bottom: 16px;
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      flex-wrap:wrap;
+      gap: 12px;
+      box-shadow: 0 10px 24px rgba(0,0,0,.22);
+      backdrop-filter: blur(8px);
     }
-    .bar{height:100%;width:0%;background:linear-gradient(90deg, var(--accent), var(--accent2));transition:width .12s ease}
-    /* Table / list */
-    table{
+    .gmStats{ display:flex; gap:10px; flex-wrap:wrap; flex:1; }
+    .gmStatBox{
+      background: rgba(13,19,29,.9);
+      padding: 10px 12px;
+      border-radius: 12px;
+      min-width: 130px;
+      text-align:center;
+      cursor:pointer;
+      transition: transform .2s ease, border-color .2s ease, filter .2s ease;
+      border: 2px solid transparent;
+      user-select:none;
+    }
+    .gmStatBox:hover{ transform: translateY(-1px); filter: brightness(1.05); }
+    .gmStatBox.active{ border-color: rgba(92,246,255,.55); }
+    .gmStatValue{ font-size: 18px; font-weight: 1000; }
+    .gmStatTotal .gmStatValue{ color: var(--accent2); }
+    .gmStatUnrev .gmStatValue{ color: #9ca3af; }
+    .gmStatContact .gmStatValue{ color: #10b981; }
+    .gmStatJugando .gmStatValue{ color: var(--accent3); }
+    .gmStatNoInt .gmStatValue{ color: var(--danger); }
+    .gmStatSinWsp .gmStatValue{ color: #9ca3af; }
+
+    .gmControls{ display:flex; gap:8px; flex-wrap:wrap; }
+    .gmBtn{
+      padding: 10px 12px;
+      border-radius: 12px;
+      border:1px solid #243246;
+      background: rgba(13,19,29,.9);
+      color: var(--text);
+      cursor:pointer;
+      font-weight: 950;
+      transition: transform .2s ease, filter .2s ease;
+      display:inline-flex;
+      align-items:center;
+      gap: 8px;
+      user-select:none;
+    }
+    .gmBtn:hover{ transform: translateY(-1px); filter: brightness(1.06); }
+    .gmBtnGreen{ border-color: rgba(16,185,129,.35); }
+    .gmBtnRed{ border-color: rgba(239,68,68,.35); }
+    .gmBtnCyan{ border-color: rgba(92,246,255,.35); }
+
+    .gmProgress{
+      background: rgba(30,41,59,.65);
+      border:1px solid #243246;
+      padding: 14px 16px;
+      border-radius: 16px;
+      margin-bottom: 14px;
+      box-shadow: 0 10px 24px rgba(0,0,0,.18);
+      backdrop-filter: blur(8px);
+    }
+    .gmProgressBar{ height: 12px; background: rgba(13,19,29,.95); border-radius: 999px; overflow:hidden; border:1px solid #243246;}
+    .gmProgressFill{ height:100%; background: linear-gradient(90deg, rgba(92,246,255,.95), rgba(139,92,246,.75)); width:0%; transition: width .35s ease; }
+
+    .gmViewControls{
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      flex-wrap:wrap;
+      gap: 12px;
+      margin-bottom: 14px;
+    }
+    .gmSearchBox{ flex:1; min-width: 280px; position:relative; }
+    .gmSearchInput{
       width:100%;
-      border-collapse:collapse;
-      border:1px solid var(--border);
-      border-radius:16px;overflow:hidden;
-      background:rgba(11,17,27,.55);
+      padding: 12px 14px 12px 42px;
+      background: rgba(13,19,29,.95);
+      border:1px solid #243246;
+      border-radius: 14px;
+      color: var(--text);
+      font-weight: 850;
+      outline:none;
     }
-    th,td{padding:10px;border-bottom:1px solid var(--border);font-size:13px;vertical-align:top}
-    th{position:sticky;top:0;background:rgba(14,20,32,.98);z-index:1;color:#C8FF9B;text-align:left;font-weight:1000}
-    tr:hover td{background:rgba(20,28,39,.65)}
-    .badge{
-      display:inline-flex;align-items:center;gap:6px;
-      padding:4px 10px;border-radius:999px;
-      font-size:12px;font-weight:1000;border:1px solid;white-space:nowrap
+    .gmSearchIcon{ position:absolute; left:14px; top:50%; transform: translateY(-50%); color: var(--muted); }
+    .gmToggle{
+      display:flex; gap:6px; background: rgba(13,19,29,.95); border:1px solid #243246;
+      padding: 6px; border-radius: 14px;
     }
-    .b-active{color:var(--accent);border-color:#2c6b2c;background:#0C1B12}
-    .b-contact{color:var(--danger);border-color:#6b2c2c;background:#1B0C0C}
-    .b-proc{color:var(--warn);border-color:#7a5a16;background:#1B1407}
-    .b-ok{color:var(--accent2);border-color:#2c6b6b;background:#07181A}
-    .cards{display:grid;grid-template-columns:repeat(3,minmax(250px,1fr));gap:12px;margin-top:12px}
-    @media(max-width:980px){.cards{grid-template-columns:repeat(2,minmax(240px,1fr));}}
-    @media(max-width:640px){.cards{grid-template-columns:1fr;}}
-    .cCard{
-      border:1px solid var(--border);border-radius:16px;background:rgba(11,17,27,.55);
-      padding:12px;display:flex;flex-direction:column;gap:10px;
+    .gmViewBtn{
+      border:none;
+      background: transparent;
+      color: var(--text2);
+      border-radius: 12px;
+      padding: 10px 12px;
+      cursor:pointer;
+      font-weight: 950;
+      display:flex;
+      align-items:center;
+      gap: 8px;
+      transition: filter .2s ease, transform .2s ease;
     }
-    .cTop{display:flex;justify-content:space-between;gap:10px}
-    .cAlias{font-weight:1000}
-    .cPhone{color:var(--muted);font-size:12px}
-    .cMeta{font-size:12px;color:var(--muted);line-height:1.35}
-    .cActions{display:flex;gap:8px;flex-wrap:wrap}
-    .chk{transform:scale(1.15)}
+    .gmViewBtn:hover{ filter: brightness(1.07); transform: translateY(-1px); }
+    .gmViewBtn.active{ background: rgba(92,246,255,.18); color: var(--text); }
+
+    .gmCardsView, .gmListView, .gmTinderView{ display:none; }
+    .gmCardsView.active{ display:grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 14px; }
+    .gmListView.active{ display:flex; flex-direction:column; gap: 10px; }
+    .gmTinderView.active{ display:flex; flex-direction:column; align-items:center; justify-content:center; min-height: 66vh; }
+
+    .gmCard, .gmItem{
+      background: rgba(13,19,29,.92);
+      border:1px solid #243246;
+      border-left: 5px solid #2b3648;
+      border-radius: 16px;
+      padding: 14px 14px;
+      box-shadow: 0 10px 22px rgba(0,0,0,.15);
+      transition: transform .2s ease, filter .2s ease;
+      position:relative;
+    }
+    .gmCard:hover, .gmItem:hover{ transform: translateY(-2px); filter: brightness(1.04); }
+    .gmCard[data-status="jugando"], .gmItem[data-status="jugando"]{ border-left-color: var(--accent3); }
+    .gmCard[data-status="contactado"], .gmItem[data-status="contactado"]{ border-left-color: #10b981; }
+    .gmCard[data-status="no interesado"], .gmItem[data-status="no interesado"]{ border-left-color: var(--danger); }
+    .gmCard[data-status="sin wsp"], .gmItem[data-status="sin wsp"]{ border-left-color: #6b7280; }
+    .gmCard[data-status="sin revisar"], .gmItem[data-status="sin revisar"]{ border-left-color: #9ca3af; }
+    .gmCard.selected, .gmItem.selected{ background: rgba(92,246,255,.10); border-left-color: rgba(92,246,255,.7); }
+
+    .gmHeader{ display:flex; justify-content:space-between; gap:10px; align-items:flex-start; }
+    .gmName, .gmPhone{
+      display:block;
+      cursor:pointer;
+      padding: 6px 8px;
+      border-radius: 10px;
+      overflow:hidden;
+      white-space:nowrap;
+      text-overflow:ellipsis;
+      user-select:none;
+    }
+    .gmName:hover, .gmPhone:hover{ background: rgba(255,255,255,.07); }
+    .gmOrigin{ color: var(--muted); font-size: 12px; font-weight: 850; text-align:right; word-break:break-all; }
+    .gmActions{ display:flex; gap:8px; align-items:center; }
+    .gmTrash{
+      width:34px;height:34px;border-radius: 999px;
+      border:1px solid #243246;
+      background: transparent;
+      color: var(--text2);
+      cursor:pointer;
+      display:flex;align-items:center;justify-content:center;
+      transition: background .15s ease, color .15s ease, border-color .15s ease;
+    }
+    .gmTrash:hover{ background: rgba(255,92,92,.18); color: #fff; border-color: rgba(255,92,92,.35); }
+
+    .gmWhatsapp{
+      margin-top:10px;
+      display:inline-flex; align-items:center; gap:8px;
+      text-decoration:none;
+      background: rgba(37,211,102,.18);
+      border: 1px solid rgba(37,211,102,.28);
+      color:#a7f3d0;
+      padding: 8px 12px;
+      border-radius: 12px;
+      font-weight: 950;
+      width: fit-content;
+    }
+    .gmWhatsapp:hover{ filter: brightness(1.08); }
+
+    .gmListActions{ display:flex; flex-wrap:wrap; gap:8px; margin-top: 10px; }
+    .gmStatusBtn{
+      background: rgba(11,15,23,.8);
+      border:1px solid #243246;
+      color: var(--text2);
+      border-radius: 12px;
+      padding: 8px 10px;
+      cursor:pointer;
+      font-weight: 950;
+      font-size: 12px;
+      display:inline-flex;
+      align-items:center;
+      gap: 6px;
+      user-select:none;
+    }
+    .gmStatusBtn:hover{ filter: brightness(1.07); }
+
+    .gmPagination{ display:flex; justify-content:center; align-items:center; gap: 10px; margin-top: 16px; flex-wrap:wrap; }
+    .gmPageBtn{
+      padding: 10px 12px;
+      border-radius: 12px;
+      border:1px solid #243246;
+      background: rgba(13,19,29,.95);
+      color: var(--text);
+      cursor:pointer;
+      font-weight: 950;
+    }
+    .gmPageBtn:disabled{ opacity:.5; cursor:not-allowed; }
+
+    /* Modals (simple) */
+    .modal{
+      position:fixed; inset:0;
+      background: rgba(0,0,0,.75);
+      display:flex; align-items:center; justify-content:center;
+      z-index: 4000;
+      opacity: 0; pointer-events:none;
+      transition: opacity .2s ease;
+      padding: 16px;
+    }
+    .modal.active{ opacity:1; pointer-events:auto; }
+    .modalBox{
+      width: min(640px, 100%);
+      background: rgba(19,26,36,.96);
+      border: 1px solid #243246;
+      border-radius: 18px;
+      box-shadow: var(--shadow);
+      padding: 16px;
+    }
+    .modalBox h3{ margin:0 0 12px 0; font-size: 16px; font-weight: 1000; }
+    .optionGrid{ display:grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 10px; }
+    .opt{
+      background: rgba(13,19,29,.95);
+      border: 2px solid transparent;
+      border-radius: 14px;
+      padding: 12px;
+      cursor:pointer;
+      transition: transform .2s ease, border-color .2s ease;
+      user-select:none;
+    }
+    .opt:hover{ transform: translateY(-1px); border-color: rgba(92,246,255,.35); }
+    .opt.selected{ border-color: rgba(92,246,255,.65); background: rgba(92,246,255,.08); }
+    .modalBtns{ display:flex; gap:10px; margin-top: 14px; }
+    .modalBtns .gmBtn{ flex:1; justify-content:center; }
+    .small{ color: var(--text2); font-size: 12px; line-height:1.4; }
+
+    /* Import progress */
+    .importBar{
+      margin-top: 10px;
+      background: rgba(13,19,29,.95);
+      border:1px solid #243246;
+      border-radius: 999px;
+      overflow:hidden;
+      height: 10px;
+    }
+    .importFill{
+      height:100%;
+      width:0%;
+      background: linear-gradient(90deg, rgba(154,255,92,.95), rgba(92,246,255,.75), rgba(139,92,246,.7));
+      transition: width .2s ease;
+    }
+
+    @media (max-width: 860px){
+      .homeGrid{ grid-template-columns: 1fr; }
+      .kpiRow{ grid-template-columns: repeat(2, minmax(160px,1fr)); }
+    }
   </style>
 </head>
 <body>
   <div class="wrap">
-    <div class="top">
-      <div class="brand">
-        <div class="logo">NX</div>
-        <div>
-          <h1>NEXO SMOKY</h1>
-          <div class="sub">Herramientas para contactos • Whaticket • Revinculación</div>
-        </div>
-      </div>
-      <div class="nav">
-        <button class="btn ghost" id="goHome">Inicio</button>
-        <button class="btn" id="goVCF">VCF → Whaticket CSV</button>
-        <button class="btn" id="goMasivo">Gestor Masivo</button>
+    <div class="brand">
+      <div class="logo"><i class="fa-solid fa-link"></i></div>
+      <div>
+        <h1>NEXO SMOKY</h1>
+        <div class="sub">Suite offline en HTML • convierte, compara y gestiona contactos sin romper el flujo</div>
       </div>
     </div>
 
     <!-- HOME -->
-    <div id="screenHome" class="grid">
-      <div class="card">
-        <div class="cardHeader">
-          <h2>Panel principal</h2>
-          <span class="pill">Offline • Corre en Chrome • Sin servidores</span>
+    <div id="viewHome" class="view active">
+      <div class="homeCard">
+        <div class="hint" style="position:relative;margin-top:0;">
+          Elegí una herramienta. Todo funciona <b>en Chrome</b>, sin instalar nada. Los datos se procesan en tu PC.
         </div>
-        <div class="cardBody">
-          <div class="homeActions">
-            <div class="bigAction" id="homeToVCF" role="button" tabindex="0">
-              <div class="title">1) Convertir VCF a CSV compatible Whaticket</div>
-              <div class="desc">
-                Cargás un <b>.vcf</b> y te descarga un <b>.csv</b> con formato:
-                <b>number,name,email,tags,metadata</b>.
-              </div>
-            </div>
-            <div class="bigAction" id="homeToMasivo" role="button" tabindex="0">
-              <div class="title">2) Gestor de Contactos Masivo (mejorado)</div>
-              <div class="desc">
-                Importá <b>CSV de contactos Whaticket</b> (33k+ sin colgar), filtrá, buscá,
-                marcá estados, etiquetas, notas, y exportá lo que necesites.
-              </div>
-            </div>
-          </div>
-          <div class="divider"></div>
-          <div class="muted" style="font-size:13px;line-height:1.5">
-            <b>Tips anti-cuelgue:</b> esta versión procesa importaciones en <b>worker</b>, muestra progreso y
-            renderiza <b>solo página actual</b>. Para archivos muy grandes, usá vista <b>Tabla</b> (más liviana).
-          </div>
-        </div>
-      </div>
 
-      <div class="card">
-        <div class="cardHeader">
-          <h2>Qué podés hacer con NEXO SMOKY</h2>
-          <span class="pill">Flujo recomendado</span>
+        <div class="homeGrid">
+          <div class="tile" id="goVcf">
+            <div class="ic"><i class="fa-solid fa-address-card"></i></div>
+            <div>
+              <h3>VCF → Whaticket (CSV)</h3>
+              <p>Subís uno o varios VCF del celular y te devuelve el CSV <b>name,number</b> listo para importar en Whaticket.</p>
+            </div>
+          </div>
+
+          <div class="tile" id="goMasivo">
+            <div class="ic cyan"><i class="fa-solid fa-users-gear"></i></div>
+            <div>
+              <h3>Gestor de Contactos Masivo</h3>
+              <p>Importa contactos (Whaticket/VCF/CSV), clasifica por estados, exporta en varios formatos y ahora también acepta:
+              <b>Operaciones de Agentes</b> y <b>Planilla Blanca</b> para actualizar estados.</p>
+            </div>
+          </div>
         </div>
-        <div class="cardBody" style="line-height:1.55;color:var(--muted);font-size:13px">
-          <ol style="margin:0;padding-left:18px">
-            <li><b>Convertís</b> agendas (VCF) a CSV para subir a Whaticket.</li>
-            <li><b>Importás</b> contactos exportados de Whaticket (CSV) al Gestor Masivo.</li>
-            <li><b>Segmentás</b> por estado (A CONTACTAR / EN PROCESO / RECUPERADO / JUGANDO), tags, o búsqueda.</li>
-            <li><b>Marcás</b> en lote: estado + etiquetas + nota para operadores.</li>
-            <li><b>Exportás</b> solo lo filtrado o la selección para tu próximo proceso.</li>
-          </ol>
-          <div class="divider"></div>
-          <div class="pill">Guardado local con IndexedDB (más robusto que localStorage)</div>
+
+        <div class="btnRow">
+          <button class="btn primary" id="btnGoVcf"><i class="fa-solid fa-arrow-right"></i> Abrir VCF → CSV</button>
+          <button class="btn cyan" id="btnGoMasivo"><i class="fa-solid fa-arrow-right"></i> Abrir Gestor Masivo</button>
+          <button class="btn ghost" id="btnAbout"><i class="fa-solid fa-circle-info"></i> Qué puedo hacer acá</button>
+        </div>
+
+        <div id="about" class="note" style="display:none;">
+          <b>Ideas rápidas:</b><br/>
+          • Convertís VCF del celu a CSV Whaticket sin apps raras.<br/>
+          • Importás contactos y los clasificás (Sin revisar / Contactado / Jugando / No interesado / Sin WSP).<br/>
+          • Podés cargar <b>Operaciones de Agentes</b> (Fecha,Estado,Cantidad,Tipo,Alias,Balance) para marcar como <b>JUGANDO</b> a los que aparecen con cargas en el período.<br/>
+          • Podés cargar <b>Planilla Blanca</b> (la export grande) para que el gestor respete/actualice tus estados previos.<br/>
+          • Exportás en: CSV completo, CSV Whaticket (2 col), VCF y Formato Planilla.
         </div>
       </div>
     </div>
 
-    <!-- VCF CONVERTER -->
-    <div id="screenVCF" class="hidden">
-      <div class="card">
-        <div class="cardHeader">
-          <h2>VCF → CSV compatible Whaticket</h2>
-          <div class="row">
-            <div class="pill">Salida: number,name,email,tags,metadata</div>
-            <button class="btn" id="vcfReset">Limpiar</button>
-          </div>
+    <!-- VCF TOOL -->
+    <div id="viewVcf" class="view">
+      <div class="toolCard">
+        <div class="btnRow" style="margin-top:0;">
+          <button class="btn ghost" id="backHome1"><i class="fa-solid fa-arrow-left"></i> Volver</button>
+          <div class="pill" style="margin-left:auto;">VCF → CSV Whaticket</div>
         </div>
-        <div class="cardBody">
-          <div class="row">
-            <div style="flex:1;min-width:280px">
-              <div class="muted" style="font-size:12px;font-weight:900;margin-bottom:8px">Archivo VCF</div>
-              <input type="file" id="vcfFile" accept=".vcf,text/vcard"/>
+
+        <div class="row" style="margin-top:12px;">
+          <div class="box">
+            <div class="secTitle">Archivos VCF (uno o varios)</div>
+            <input type="file" id="vcfInput" accept=".vcf,.vcard" multiple />
+            <div class="hint">Tip: exportalos desde el celu como vCard/VCF. No pasa nada si vienen “raros”, el parser busca TEL y FN/N.</div>
+
+            <div class="inline">
+              <label class="chk"><input type="checkbox" id="vcfDedup" checked> Quitar duplicados por teléfono</label>
+              <label class="chk"><input type="checkbox" id="vcfKeepPlus" checked> Forzar E.164 (+)</label>
             </div>
-            <div style="width:260px;min-width:240px">
-              <div class="muted" style="font-size:12px;font-weight:900;margin-bottom:8px">Tags (opcional)</div>
-              <input type="text" id="vcfTags" placeholder="ej: nexo,importado"/>
+
+            <div class="inline">
+              <div style="flex:1; min-width:240px">
+                <div class="hint" style="margin:0 0 6px 0;">Prefijo de nombre (opcional)</div>
+                <input type="text" id="vcfPrefix" placeholder="Ej: NEXO_" />
+              </div>
+              <div style="flex:1; min-width:240px">
+                <div class="hint" style="margin:0 0 6px 0;">País por defecto (si viene sin código)</div>
+                <input type="text" id="vcfCountry" value="+54" />
+              </div>
             </div>
-            <div style="width:220px;min-width:200px">
-              <div class="muted" style="font-size:12px;font-weight:900;margin-bottom:8px">Prefijo país (opcional)</div>
-              <input type="text" id="vcfCountry" placeholder="ej: 54"/>
-            </div>
+
+            <button class="btn primary" id="vcfConvert" style="margin-top:12px; width:100%; justify-content:center;">
+              <i class="fa-solid fa-file-arrow-down"></i> Convertir y Descargar CSV
+            </button>
+
+            <div class="importBar"><div class="importFill" id="vcfFill"></div></div>
           </div>
 
-          <div class="divider"></div>
-
-          <div class="row" style="justify-content:space-between">
-            <div class="row">
-              <button class="btn primary" id="vcfConvert">Convertir y Descargar</button>
-              <span class="pill">Procesa en worker • no bloquea Chrome</span>
+          <div class="box">
+            <div class="secTitle">Salida</div>
+            <div class="kpiRow" style="grid-template-columns: repeat(3, minmax(160px,1fr));">
+              <div class="kpi"><div class="l">VCF leídos</div><div class="v cyan" id="vcfKpiFiles">0</div></div>
+              <div class="kpi"><div class="l">Contactos</div><div class="v green" id="vcfKpiContacts">0</div></div>
+              <div class="kpi"><div class="l">Duplicados</div><div class="v red" id="vcfKpiDup">0</div></div>
             </div>
-            <div class="row" style="align-items:center">
-              <div class="progress"><div class="bar" id="vcfBar"></div></div>
-              <span class="pill" id="vcfProg">0%</span>
-            </div>
+            <div class="note" id="vcfOutNote">Subí VCF para ver el resultado.</div>
           </div>
-
-          <div class="divider"></div>
-          <div class="muted" id="vcfSummary">Sin procesar.</div>
         </div>
       </div>
     </div>
 
-    <!-- MASIVO -->
-    <div id="screenMasivo" class="hidden">
-      <div class="card">
-        <div class="cardHeader">
-          <h2>Gestor de Contactos Masivo</h2>
+    <!-- GESTOR MASIVO -->
+    <div id="viewMasivo" class="view">
+      <div class="toolCard">
+        <div class="btnRow" style="margin-top:0;">
+          <button class="btn ghost" id="backHome2"><i class="fa-solid fa-arrow-left"></i> Volver</button>
+          <div class="pill" style="margin-left:auto;">Gestor de Contactos Masivo</div>
+        </div>
+
+        <!-- Upload screen (inline) -->
+        <div id="gmUpload" class="toolCard" style="margin-top:12px;">
+          <div class="secTitle">Importación inicial</div>
           <div class="row">
-            <span class="pill" id="dbState">DB: —</span>
-            <button class="btn warn" id="dbExportRaw">Exportar DB (backup)</button>
-            <button class="btn red" id="dbClear">Borrar DB</button>
+            <div class="box">
+              <div class="secTitle">Archivos a importar</div>
+              <input type="file" id="gmFileInput" multiple accept=".vcf,.vcard,.csv" />
+              <div class="hint">
+                Soporta:
+                <b>VCF</b>, <b>CSV Whaticket</b> (number,name,email,tags,metadata),
+                <b>CSV Planilla Blanca</b> (usuarios,estado de revision, ...),
+                y <b>CSV Operaciones de Agentes</b> (Fecha,Estado,Cantidad,Tipo,Alias,Balance).
+              </div>
+              <div class="inline">
+                <div style="flex:1; min-width:220px">
+                  <div class="hint" style="margin:0 0 6px 0;">Origen (etiqueta)</div>
+                  <input type="text" id="gmOrigin" placeholder="Ej: WTK Febrero / Celular Ventas" />
+                </div>
+                <div style="flex:1; min-width:220px">
+                  <div class="hint" style="margin:0 0 6px 0;">Modo</div>
+                  <select id="gmImportMode" style="width:100%; padding:12px; border-radius:12px; border:1px solid #243246; background:#0d131d; color:var(--text); font-weight:900;">
+                    <option value="auto" selected>Auto-detectar por encabezado</option>
+                    <option value="contacts">Forzar: Contactos Whaticket</option>
+                    <option value="ops">Forzar: Operaciones de Agentes</option>
+                    <option value="sheet">Forzar: Planilla Blanca</option>
+                    <option value="simple2">Forzar: CSV simple (2 col)</option>
+                  </select>
+                </div>
+              </div>
+
+              <div class="inline">
+                <label class="chk"><input type="checkbox" id="gmApplyOpsToStatus" checked> Si cargo Operaciones, marcar como <b>JUGANDO</b> a los contactos activos</label>
+                <label class="chk"><input type="checkbox" id="gmKeepLocal" checked> Guardar en el navegador (localStorage)</label>
+              </div>
+
+              <button class="btn cyan" id="gmProcess" style="margin-top:12px; width:100%; justify-content:center;">
+                <i class="fa-solid fa-play"></i> Procesar y Entrar
+              </button>
+              <div class="importBar"><div class="importFill" id="gmFill"></div></div>
+              <div class="small" id="gmImportInfo" style="margin-top:10px;color:var(--text2);">Listo para importar.</div>
+            </div>
+
+            <div class="box">
+              <div class="secTitle">Tip performance (33k+)</div>
+              <div class="note">
+                • La importación se hace por <b>bloques</b> (no se cuelga fácil).<br/>
+                • En pantalla se muestran pocas filas; el resto queda para búsqueda/export.<br/>
+                • Si tu Chrome se queda sin memoria: desmarcá <b>Guardar en el navegador</b> antes de procesar y exportá al final.
+              </div>
+              <div class="note" style="margin-top:10px;">
+                <b>Atajos:</b><br/>
+                • Doble click en nombre o teléfono → editar.<br/>
+                • Click en nombre o número → copia al portapapeles.<br/>
+                • Selección masiva → cambiar estado o borrar.
+              </div>
+            </div>
           </div>
         </div>
 
-        <div class="cardBody">
-          <div class="row">
-            <div style="flex:1;min-width:280px">
-              <div class="muted" style="font-size:12px;font-weight:900;margin-bottom:8px">Importar CSV Whaticket</div>
-              <input type="file" id="csvContacts" accept=".csv,text/csv"/>
-              <div class="muted" style="font-size:12px;margin-top:8px;line-height:1.35">
-                Encabezados esperados: <b>number,name,email,tags,metadata</b><br/>
-                (si vienen con otros nombres, igual intenta detectar: phone/telefono, nombre, etc.)
+        <!-- Main interface -->
+        <div id="gmMain" class="gmHidden">
+          <div class="gmNavbar">
+            <div class="gmStats">
+              <div class="gmStatBox gmStatTotal active" data-filter="all"><div class="gmStatValue" id="gmTotal">0</div><div style="font-size:12px;color:var(--text2);font-weight:900;">Total</div></div>
+              <div class="gmStatBox gmStatUnrev" data-filter="sin revisar"><div class="gmStatValue" id="gmSinRevisar">0</div><div style="font-size:12px;color:var(--text2);font-weight:900;">Sin revisar</div></div>
+              <div class="gmStatBox gmStatContact" data-filter="contactado"><div class="gmStatValue" id="gmContactado">0</div><div style="font-size:12px;color:var(--text2);font-weight:900;">Contactado</div></div>
+              <div class="gmStatBox gmStatJugando" data-filter="jugando"><div class="gmStatValue" id="gmJugando">0</div><div style="font-size:12px;color:var(--text2);font-weight:900;">Jugando</div></div>
+              <div class="gmStatBox gmStatNoInt" data-filter="no interesado"><div class="gmStatValue" id="gmNoInter">0</div><div style="font-size:12px;color:var(--text2);font-weight:900;">No interesado</div></div>
+              <div class="gmStatBox gmStatSinWsp" data-filter="sin wsp"><div class="gmStatValue" id="gmSinWsp">0</div><div style="font-size:12px;color:var(--text2);font-weight:900;">Sin WSP</div></div>
+            </div>
+
+            <div class="gmControls">
+              <button class="gmBtn gmBtnCyan" id="gmImportMore"><i class="fa-solid fa-plus"></i> Agregar</button>
+              <button class="gmBtn gmBtnGreen" id="gmExport"><i class="fa-solid fa-file-export"></i> Exportar</button>
+              <button class="gmBtn gmBtnRed" id="gmClear"><i class="fa-solid fa-trash"></i> Borrar todo</button>
+            </div>
+          </div>
+
+          <div class="gmProgress" id="gmProgress">
+            <div style="display:flex; justify-content:space-between; align-items:center; gap:10px; margin-bottom:10px;">
+              <div style="font-weight:1000;">Progreso de revisión</div>
+              <div style="color:var(--accent2); font-weight:1000;" id="gmProgressPct">0%</div>
+            </div>
+            <div class="gmProgressBar"><div class="gmProgressFill" id="gmProgressFill"></div></div>
+            <div style="display:flex; justify-content:space-between; margin-top:8px; color:var(--text2); font-size:12px; font-weight:900;">
+              <span id="gmReviewed">0 revisados</span>
+              <span id="gmCount">0 totales</span>
+            </div>
+          </div>
+
+          <div class="gmViewControls">
+            <div class="gmSearchBox">
+              <i class="fa-solid fa-magnifying-glass gmSearchIcon"></i>
+              <input id="gmSearch" class="gmSearchInput" placeholder="Buscar por nombre, alias o número..." />
+            </div>
+
+            <div style="display:flex; align-items:center; gap:10px; flex-wrap:wrap;">
+              <label class="chk" style="margin:0;"><input type="checkbox" id="gmSelectAll"> Seleccionar página</label>
+              <div class="gmToggle">
+                <button class="gmViewBtn active" data-view="cards"><i class="fa-solid fa-grip"></i> Tarjetas</button>
+                <button class="gmViewBtn" data-view="list"><i class="fa-solid fa-list"></i> Lista</button>
+                <button class="gmViewBtn" data-view="tinder"><i class="fa-solid fa-fire"></i> Revisión</button>
               </div>
             </div>
+          </div>
 
-            <div style="width:420px;min-width:300px">
-              <div class="muted" style="font-size:12px;font-weight:900;margin-bottom:8px">Acciones rápidas</div>
-              <div class="row">
-                <button class="btn primary" id="importCSVBtn">Importar (rápido)</button>
-                <button class="btn" id="refreshBtn">Refrescar vista</button>
-                <button class="btn cyan" id="exportFilteredBtn">Exportar filtrado</button>
+          <div class="gmCardsView active" id="gmCards"></div>
+          <div class="gmListView" id="gmList"></div>
+          <div class="gmTinderView" id="gmTinder">
+            <div class="gmCard" id="gmTinderCard" style="max-width:520px; width: 95%; padding: 26px;">
+              <div style="position:absolute; top: 16px; right: 16px; background: rgba(30,41,59,.85); border:1px solid #243246; padding: 8px 12px; border-radius: 999px; font-weight: 1000;" id="gmTinderCounter">0/0</div>
+              <div style="font-size: 22px; font-weight: 1000;" id="gmTinderName">No hay contactos</div>
+              <div style="color: var(--text2); margin-top: 6px; font-weight:900;" id="gmTinderOrigin"></div>
+              <div style="margin-top: 12px; color: var(--text2); font-weight:900;" id="gmTinderPhone">-</div>
+              <a id="gmTinderWa" class="gmWhatsapp" href="#" target="_blank"><i class="fa-brands fa-whatsapp"></i> Enviar WhatsApp</a>
+
+              <div style="display:grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-top: 16px;">
+                <button class="gmBtn" id="gmTinderBack" style="justify-content:center; border-color:#3b4a63;"><i class="fa-solid fa-rotate-left"></i> Atrás</button>
+                <button class="gmBtn" data-status="sin wsp" style="justify-content:center; border-color: rgba(107,114,128,.55);"><i class="fa-solid fa-ban"></i> Sin WSP</button>
+                <button class="gmBtn" data-status="no interesado" style="justify-content:center; border-color: rgba(255,92,92,.55);"><i class="fa-solid fa-xmark"></i> No Interesado</button>
+                <button class="gmBtn" data-status="jugando" style="justify-content:center; border-color: rgba(139,92,246,.55);"><i class="fa-solid fa-gamepad"></i> Jugando</button>
+                <button class="gmBtn" data-status="contactado" style="justify-content:center; border-color: rgba(16,185,129,.55);"><i class="fa-solid fa-check"></i> Contactado</button>
+                <button class="gmBtn" data-status="sin revisar" style="justify-content:center; border-color: rgba(156,163,175,.55);"><i class="fa-solid fa-clock"></i> Sin Revisar</button>
+                <button class="gmBtn gmBtnCyan" id="gmTinderNext" style="grid-column: span 3; justify-content:center;"><i class="fa-solid fa-arrow-right"></i> Siguiente</button>
               </div>
-              <div class="row" style="margin-top:10px;align-items:center">
-                <div class="progress" style="width:240px"><div class="bar" id="masivoBar"></div></div>
-                <span class="pill" id="masivoProg">0%</span>
-                <label class="pill"><input class="chk" type="checkbox" id="appendMode"> Append</label>
-              </div>
-              <div class="muted" id="importInfo" style="font-size:12px;margin-top:8px">—</div>
             </div>
           </div>
 
-          <div class="divider"></div>
+          <div class="gmPagination" id="gmPagination"></div>
 
-          <div class="row" style="justify-content:space-between">
-            <div class="row" style="flex-wrap:wrap">
-              <input type="text" id="qSearch" placeholder="Buscar alias, nombre, teléfono, tags..." style="min-width:320px;flex:1"/>
-              <select id="fStatus" style="min-width:220px">
-                <option value="">Estado: (todos)</option>
-                <option value="A CONTACTAR">A CONTACTAR</option>
-                <option value="EN PROCESO">EN PROCESO</option>
-                <option value="RECUPERADO">RECUPERADO</option>
-                <option value="JUGANDO">JUGANDO</option>
-                <option value="NO INTERESA">NO INTERESA</option>
+          <!-- Bulk bar -->
+          <div id="gmBulk" class="toast" style="left:50%; right:auto; transform: translate(-50%, 16px); bottom: 18px; max-width: 820px;">
+            <div style="display:flex; gap: 10px; align-items:center; flex-wrap:wrap; width:100%;">
+              <div style="font-weight:1000; color: var(--text);" id="gmBulkCount">0 seleccionados</div>
+              <select id="gmBulkStatus" style="padding:10px 12px; border-radius:12px; border:1px solid #243246; background:#0d131d; color:var(--text); font-weight:900;">
+                <option value="" disabled selected>Cambiar estado</option>
+                <option value="sin revisar">Sin Revisar</option>
+                <option value="jugando">Jugando</option>
+                <option value="contactado">Contactado</option>
+                <option value="no interesado">No Interesado</option>
+                <option value="sin wsp">Sin WSP</option>
               </select>
-              <input type="text" id="fTag" placeholder="Tag exacto (opcional)" style="min-width:220px"/>
-              <select id="viewMode" style="min-width:170px">
-                <option value="table">Vista: Tabla (recomendada)</option>
-                <option value="cards">Vista: Cards</option>
-              </select>
-            </div>
-
-            <div class="row">
-              <span class="pill">Página</span>
-              <button class="btn" id="prevPage">◀</button>
-              <span class="pill" id="pageInfo">1/1</span>
-              <button class="btn" id="nextPage">▶</button>
-              <select id="pageSize" style="min-width:140px">
-                <option value="50">50 / pág</option>
-                <option value="100">100 / pág</option>
-                <option value="200">200 / pág</option>
-              </select>
+              <button class="gmBtn gmBtnRed" id="gmBulkDelete"><i class="fa-solid fa-trash"></i> Eliminar</button>
+              <button class="gmBtn" id="gmBulkCancel"><i class="fa-solid fa-xmark"></i></button>
             </div>
           </div>
-
-          <div class="kpi">
-            <div class="box"><div class="lbl">Contactos en DB</div><div class="val green" id="kTotal">0</div></div>
-            <div class="box"><div class="lbl">Filtrados</div><div class="val cyan" id="kFiltered">0</div></div>
-            <div class="box"><div class="lbl">Seleccionados</div><div class="val warnTxt" id="kSelected">0</div></div>
-            <div class="box"><div class="lbl">Vista actual</div><div class="val" style="font-size:18px;margin-top:10px" id="kView">Tabla</div></div>
-          </div>
-
-          <div class="divider"></div>
-
-          <div class="row" style="justify-content:space-between">
-            <div class="row" style="flex-wrap:wrap">
-              <button class="btn" id="selAllPage">Seleccionar pág</button>
-              <button class="btn" id="selNone">Limpiar selección</button>
-              <button class="btn red" id="deleteSel">Borrar seleccionados</button>
-            </div>
-            <div class="row" style="flex-wrap:wrap">
-              <select id="bulkStatus" style="min-width:220px">
-                <option value="">Cambiar estado…</option>
-                <option value="A CONTACTAR">A CONTACTAR</option>
-                <option value="EN PROCESO">EN PROCESO</option>
-                <option value="RECUPERADO">RECUPERADO</option>
-                <option value="JUGANDO">JUGANDO</option>
-                <option value="NO INTERESA">NO INTERESA</option>
-              </select>
-              <input type="text" id="bulkTags" placeholder="Agregar tags (coma)" style="min-width:240px"/>
-              <button class="btn primary" id="applyBulk">Aplicar a selección</button>
-            </div>
-          </div>
-
-          <div id="results"></div>
         </div>
+
       </div>
     </div>
-
   </div>
 
-  <div class="toast" id="toast">
+  <div id="toast" class="toast">
     <div class="spinner"></div>
     <div id="toastText">Procesando...</div>
   </div>
 
+  <!-- Export modal -->
+  <div id="gmExportModal" class="modal">
+    <div class="modalBox">
+      <h3>Exportar contactos</h3>
+      <div class="small">Elegí qué exportar y el formato. La exportación no se limita por lo que se ve en pantalla.</div>
+
+      <div style="margin-top:12px;">
+        <div class="secTitle" style="margin:0 0 8px 0;">Conjunto</div>
+        <div class="optionGrid" id="gmExportTypeGrid">
+          <div class="opt selected" data-type="filtered"><b>Vista actual</b><div class="small" id="gmExportFilteredCount">0 contactos</div></div>
+          <div class="opt" data-type="all"><b>Todos</b><div class="small" id="gmExportAllCount">0 contactos</div></div>
+        </div>
+      </div>
+
+      <div style="margin-top:12px;">
+        <div class="secTitle" style="margin:0 0 8px 0;">Formato</div>
+        <div class="optionGrid" id="gmExportFmtGrid">
+          <div class="opt selected" data-format="excel"><i class="fa-solid fa-file-csv"></i> CSV completo</div>
+          <div class="opt" data-format="whaticket"><i class="fa-solid fa-table"></i> CSV Whaticket (2 col)</div>
+          <div class="opt" data-format="vcf"><i class="fa-solid fa-address-card"></i> VCF</div>
+          <div class="opt" data-format="sheet"><i class="fa-solid fa-grip"></i> Formato planilla</div>
+        </div>
+      </div>
+
+      <div class="modalBtns">
+        <button class="gmBtn" id="gmExportCancel">Cancelar</button>
+        <button class="gmBtn gmBtnGreen" id="gmExportDo"><i class="fa-solid fa-download"></i> Exportar</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Add more modal -->
+  <div id="gmAddModal" class="modal">
+    <div class="modalBox">
+      <h3>Agregar más archivos</h3>
+      <div class="small">Podés agregar contactos, operaciones de agentes o una planilla blanca para actualizar estados.</div>
+
+      <div style="margin-top:12px;" class="box">
+        <div class="secTitle">Archivos</div>
+        <input type="file" id="gmMoreInput" multiple accept=".vcf,.vcard,.csv" />
+        <div class="inline">
+          <div style="flex:1; min-width:220px">
+            <div class="hint" style="margin:0 0 6px 0;">Origen (etiqueta)</div>
+            <input type="text" id="gmMoreOrigin" placeholder="Ej: Planilla nueva / Ops Febrero" />
+          </div>
+          <div style="flex:1; min-width:220px">
+            <div class="hint" style="margin:0 0 6px 0;">Modo</div>
+            <select id="gmMoreMode" style="width:100%; padding:12px; border-radius:12px; border:1px solid #243246; background:#0d131d; color:var(--text); font-weight:900;">
+              <option value="auto" selected>Auto-detectar por encabezado</option>
+              <option value="contacts">Forzar: Contactos Whaticket</option>
+              <option value="ops">Forzar: Operaciones de Agentes</option>
+              <option value="sheet">Forzar: Planilla Blanca</option>
+              <option value="simple2">Forzar: CSV simple (2 col)</option>
+            </select>
+          </div>
+        </div>
+        <div class="inline">
+          <label class="chk"><input type="checkbox" id="gmMoreApplyOps" checked> Si cargo Operaciones, marcar como <b>JUGANDO</b> a los contactos activos</label>
+        </div>
+        <button class="btn cyan" id="gmMoreProcess" style="margin-top:12px; width:100%; justify-content:center;"><i class="fa-solid fa-play"></i> Procesar</button>
+        <div class="importBar"><div class="importFill" id="gmMoreFill"></div></div>
+      </div>
+
+      <div class="modalBtns">
+        <button class="gmBtn" id="gmMoreCancel">Cerrar</button>
+      </div>
+    </div>
+  </div>
+
 <script>
-/* =========================================================
-   Toast / Progress
-========================================================= */
-const toast = document.getElementById('toast');
-const toastText = document.getElementById('toastText');
-let toastTimer=null;
-function showToast(text, duration=2200){
-  if(toastTimer){clearTimeout(toastTimer); toastTimer=null;}
-  toastText.textContent=text;
-  toast.classList.add('show');
-  toastTimer=setTimeout(()=>{toast.classList.remove('show'); toastTimer=null;}, duration);
-}
-function setBar(el, pct){ el.style.width = Math.max(0, Math.min(100, pct)) + '%'; }
-function esc(s){ return String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+(() => {
+  'use strict';
 
-/* =========================================================
-   Screen routing
-========================================================= */
-const screens = {
-  home: document.getElementById('screenHome'),
-  vcf: document.getElementById('screenVCF'),
-  masivo: document.getElementById('screenMasivo'),
-};
-function showScreen(key){
-  Object.values(screens).forEach(s=>s.classList.add('hidden'));
-  screens[key].classList.remove('hidden');
-  if(key==='masivo') refreshView();
-}
-document.getElementById('goHome').onclick = ()=>showScreen('home');
-document.getElementById('goVCF').onclick  = ()=>showScreen('vcf');
-document.getElementById('goMasivo').onclick = ()=>showScreen('masivo');
-document.getElementById('homeToVCF').onclick = ()=>showScreen('vcf');
-document.getElementById('homeToMasivo').onclick = ()=>showScreen('masivo');
+  /* ---------- Toast ---------- */
+  const toast = document.getElementById('toast');
+  const toastText = document.getElementById('toastText');
+  let toastTimer = null;
+  function showToast(text, duration=2200) {
+    if (toastTimer) { clearTimeout(toastTimer); toastTimer = null; }
+    toastText.textContent = text;
+    toast.classList.add('show');
+    toastTimer = setTimeout(()=>{ toast.classList.remove('show'); toastTimer = null; }, duration);
+  }
 
-/* =========================================================
-   Worker factory (VCF/CSV parsing)
-========================================================= */
-function makeWorker(){
-  const src = `
-  self.onmessage = async (e) => {
-    const {type, text, options} = e.data || {};
-    try{
-      if(type==='parseVCF'){
-        const tags = (options?.tags||'').trim();
-        const country = (options?.country||'').trim();
-        const out = [];
-        const lines = String(text||'').replace(/\\r\\n/g,'\\n').replace(/\\r/g,'\\n').split('\\n');
-        // parse by vcard blocks
-        let card = [];
-        let total = lines.length;
-        for(let i=0;i<lines.length;i++){
-          const line = lines[i];
-          if(/^BEGIN:VCARD/i.test(line)){ card = [line]; }
-          else if(card.length){ card.push(line); }
-          if(/^END:VCARD/i.test(line) && card.length){
-            const joined = card.join('\\n');
-            const fn = (joined.match(/\\nFN(?:;[^:]*)?:(.*)/i)||[])[1] || '';
-            const email = (joined.match(/\\nEMAIL(?:;[^:]*)?:(.*)/i)||[])[1] || '';
-            let tel = (joined.match(/\\nTEL(?:;[^:]*)?:(.*)/i)||[])[1] || '';
-            tel = String(tel).trim();
-            // clean phone
-            let num = tel.replace(/[^0-9+]/g,'');
-            // if no + and country provided, prepend
-            if(num && !num.startsWith('+') && country){
-              // avoid double country
-              if(!num.startsWith(country)) num = country + num;
-              num = '+' + num.replace(/^\\+/, '');
-            }
-            // if starts with 00, turn to +
-            if(num.startsWith('00')) num = '+' + num.slice(2);
-            // if starts with + but has spaces already cleaned
-            if(num && !num.startsWith('+') && num.length>6) num = '+'+num;
+  /* ---------- Navigation ---------- */
+  const viewHome = document.getElementById('viewHome');
+  const viewVcf = document.getElementById('viewVcf');
+  const viewMasivo = document.getElementById('viewMasivo');
+  function setView(id){
+    [viewHome, viewVcf, viewMasivo].forEach(v => v.classList.remove('active'));
+    document.getElementById(id).classList.add('active');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+  document.getElementById('goVcf').onclick = () => setView('viewVcf');
+  document.getElementById('btnGoVcf').onclick = () => setView('viewVcf');
+  document.getElementById('goMasivo').onclick = () => setView('viewMasivo');
+  document.getElementById('btnGoMasivo').onclick = () => setView('viewMasivo');
+  document.getElementById('backHome1').onclick = () => setView('viewHome');
+  document.getElementById('backHome2').onclick = () => setView('viewHome');
+  document.getElementById('btnAbout').onclick = () => {
+    const el = document.getElementById('about');
+    el.style.display = (el.style.display === 'none' || !el.style.display) ? 'block' : 'none';
+  };
 
-            out.push({
-              number: num.replace(/^\\+/,''), // Whaticket suele aceptar sin +
-              name: String(fn||'').trim() || (num ? num : ''),
-              email: String(email||'').trim(),
-              tags: tags,
-              metadata: ''
-            });
-            card = [];
-          }
-          if(i % 4000 === 0){
-            self.postMessage({type:'progress', pct: Math.round(i*100/total)});
-            await new Promise(r=>setTimeout(r,0));
-          }
-        }
-        self.postMessage({type:'done', rows: out});
-      }
+  /* =========================================================
+     Tool 1: VCF -> Whaticket CSV
+  ========================================================= */
+  const vcfInput = document.getElementById('vcfInput');
+  const vcfFill = document.getElementById('vcfFill');
+  const vcfKpiFiles = document.getElementById('vcfKpiFiles');
+  const vcfKpiContacts = document.getElementById('vcfKpiContacts');
+  const vcfKpiDup = document.getElementById('vcfKpiDup');
+  const vcfOutNote = document.getElementById('vcfOutNote');
 
-      if(type==='parseCSV'){
-        const t = String(text||'').replace(/\\uFEFF/g,'');
-        const lines = t.replace(/\\r\\n/g,'\\n').replace(/\\r/g,'\\n').split('\\n').filter(l=>l.trim()!=='');
-        if(!lines.length) return self.postMessage({type:'done', rows:[], headers:[]});
+  function normalizePhoneE164(raw, defaultCountry='+54', forcePlus=true){
+    const s = String(raw || '').trim();
+    if (!s) return '';
+    let digits = s.replace(/\D/g,'');
+    if (!digits) return '';
 
-        // sep=
-        let start = 0;
-        let delim = ',';
-        const first = lines[0].trim();
-        if(/^sep=;/i.test(first)){ delim=';'; start=1; }
-        if(/^sep=,/i.test(first)){ delim=','; start=1; }
-
-        // heuristic
-        if(start===0){
-          const sample = lines.slice(0,5).join('\\n');
-          const commas = (sample.match(/,/g)||[]).length;
-          const semis  = (sample.match(/;/g)||[]).length;
-          delim = semis>commas ? ';' : ',';
-        }
-
-        function parseLine(line){
-          const res=[];
-          let cur=''; let inQ=false;
-          for(let i=0;i<line.length;i++){
-            const ch=line[i];
-            if(ch === '"'){
-              if(inQ && line[i+1]==='"'){ cur+='"'; i++; }
-              else inQ=!inQ;
-              continue;
-            }
-            if(ch===delim && !inQ){ res.push(cur); cur=''; continue; }
-            cur+=ch;
-          }
-          res.push(cur);
-          return res;
-        }
-
-        const headers = parseLine(lines[start]).map(h=>String(h||'').trim());
-        const rows=[];
-        const total = lines.length - (start+1);
-
-        for(let i=start+1, idx=0;i<lines.length;i++, idx++){
-          const cols = parseLine(lines[i]);
-          rows.push(cols);
-          if(idx % 6000 === 0){
-            self.postMessage({type:'progress', pct: Math.round(idx*100/Math.max(1,total)), delim, headers});
-            await new Promise(r=>setTimeout(r,0));
-          }
-        }
-        self.postMessage({type:'done', rows, headers, delim});
-      }
-    }catch(err){
-      self.postMessage({type:'error', message: String(err?.message||err)});
+    // If already has country code 54 or starts with 00
+    if (/^00/.test(s)) {
+      let intl = '+' + digits.slice(2);
+      return forcePlus ? intl : intl.replace(/^\+/,'');
     }
-  };`;
-  const blob = new Blob([src], {type:'text/javascript'});
-  return new Worker(URL.createObjectURL(blob));
-}
 
-/* =========================================================
-   CSV download helpers
-========================================================= */
-function csvEscape(v){
-  const s = String(v ?? '');
-  return '"' + s.replace(/"/g,'""') + '"';
-}
-function downloadText(text, name, mime='text/plain;charset=utf-8;'){
-  const bom = mime.includes('csv') ? '\\uFEFF' : '';
-  const blob = new Blob([bom + text], {type:mime});
-  const a = document.createElement('a');
-  a.href = URL.createObjectURL(blob);
-  a.download = name;
-  document.body.appendChild(a);
-  a.click();
-  document.body.removeChild(a);
-}
+    // If has leading 54 and length seems ok
+    if (digits.startsWith('54')) {
+      const intl = '+' + digits;
+      return forcePlus ? intl : intl.replace(/^\+/,'');
+    }
 
-/* =========================================================
-   Tool 1: VCF -> Whaticket CSV
-========================================================= */
-const vcfBar = document.getElementById('vcfBar');
-const vcfProg = document.getElementById('vcfProg');
-const vcfSummary = document.getElementById('vcfSummary');
-let vcfLastRows = [];
-document.getElementById('vcfReset').onclick = ()=>{
-  document.getElementById('vcfFile').value = '';
-  document.getElementById('vcfTags').value = '';
-  document.getElementById('vcfCountry').value = '';
-  vcfLastRows = [];
-  setBar(vcfBar,0); vcfProg.textContent='0%';
-  vcfSummary.textContent='Sin procesar.';
-};
+    // remove leading 0 and "15" pattern (ARG old)
+    if (digits.startsWith('0') && digits.length >= 10) digits = digits.slice(1);
+    digits = digits.replace(/^(\d{2,4})15/, '$1');
 
-document.getElementById('vcfConvert').onclick = async ()=>{
-  const f = document.getElementById('vcfFile').files[0];
-  if(!f) return showToast('Seleccioná un VCF', 2200);
-
-  showToast('Convirtiendo VCF…', 6000);
-  setBar(vcfBar, 2); vcfProg.textContent='2%';
-
-  const text = await f.text();
-  const w = makeWorker();
-
-  await new Promise((resolve,reject)=>{
-    w.onmessage = (e)=>{
-      const msg = e.data || {};
-      if(msg.type==='progress'){
-        setBar(vcfBar, msg.pct);
-        vcfProg.textContent = msg.pct + '%';
-      }
-      if(msg.type==='done'){
-        vcfLastRows = msg.rows || [];
-        setBar(vcfBar, 100);
-        vcfProg.textContent = '100%';
-        resolve();
-      }
-      if(msg.type==='error'){ reject(new Error(msg.message)); }
-    };
-    w.postMessage({type:'parseVCF', text, options:{
-      tags: document.getElementById('vcfTags').value,
-      country: document.getElementById('vcfCountry').value
-    }});
-  });
-
-  // build CSV
-  const header = 'number,name,email,tags,metadata\\n';
-  let csv = header;
-  for(const r of vcfLastRows){
-    csv += [csvEscape(r.number), csvEscape(r.name), csvEscape(r.email), csvEscape(r.tags), csvEscape(r.metadata)].join(',') + '\\n';
+    const intl = (String(defaultCountry || '+54').startsWith('+') ? defaultCountry : ('+'+defaultCountry)) + digits;
+    return forcePlus ? intl : intl.replace(/^\+/,'');
   }
-  const name = (f.name || 'contactos').replace(/\\.vcf$/i,'') + '_whaticket.csv';
-  downloadText(csv, name, 'text/csv;charset=utf-8;');
-  vcfSummary.innerHTML = `Listo: <b>${vcfLastRows.length.toLocaleString('es-AR')}</b> contactos exportados.`;
-  showToast('CSV descargado', 1600);
-};
 
-/* =========================================================
-   Tool 2: Gestor Masivo (IndexedDB + render paginado)
-========================================================= */
-const DB_NAME = 'nexo_smoky_db';
-const DB_VER  = 1;
-const STORE   = 'contacts';
-
-let db = null;
-
-// In-memory cache (para filtros rápidos)
-let CACHE = {
-  list: [],            // todos los contactos
-  filtered: [],        // filtrados
-  selected: new Set(), // ids seleccionados
-  page: 1,
-  pageSize: 50,
-  view: 'table'
-};
-
-function openDB(){
-  return new Promise((resolve,reject)=>{
-    const req = indexedDB.open(DB_NAME, DB_VER);
-    req.onupgradeneeded = (e)=>{
-      const d = req.result;
-      if(!d.objectStoreNames.contains(STORE)){
-        const os = d.createObjectStore(STORE, {keyPath:'id', autoIncrement:true});
-        os.createIndex('number','number',{unique:false});
-        os.createIndex('name','name',{unique:false});
-        os.createIndex('status','status',{unique:false});
-        os.createIndex('tags','tags',{unique:false});
+  function parseVCFToWhaticket(text, opts){
+    const origin = { ...opts };
+    const vcards = String(text || '').split(/END:VCARD/i).filter(x => x.trim());
+    const out = [];
+    for (const card of vcards) {
+      const lines = card.split(/\r\n|\r|\n/).map(l => l.trim()).filter(Boolean);
+      // FN or N
+      let name = '';
+      const fn = lines.find(l => /^FN[:;]/i.test(l));
+      const n  = lines.find(l => /^N[:;]/i.test(l));
+      if (fn) name = fn.slice(fn.indexOf(':')+1).trim();
+      if (!name && n) {
+        const raw = n.slice(n.indexOf(':')+1);
+        const parts = raw.split(';').map(p => p.trim());
+        name = [parts[1], parts[0]].filter(Boolean).join(' ').trim();
       }
-    };
-    req.onsuccess = ()=>resolve(req.result);
-    req.onerror = ()=>reject(req.error);
-  });
-}
+      if (!name) name = 'Sin nombre';
 
-function tx(storeName, mode='readonly'){
-  const t = db.transaction(storeName, mode);
-  return t.objectStore(storeName);
-}
+      // TEL
+      const telLines = lines.filter(l => /^TEL/i.test(l));
+      let tel = '';
+      if (telLines.length) {
+        // take first TEL: after colon
+        const tl = telLines[0];
+        tel = tl.slice(tl.indexOf(':')+1).trim();
+      }
+      const e164 = normalizePhoneE164(tel, origin.defaultCountry, origin.forcePlus);
+      if (!e164) continue;
 
-async function dbCount(){
-  return await new Promise((resolve,reject)=>{
-    const req = tx(STORE).count();
-    req.onsuccess=()=>resolve(req.result||0);
-    req.onerror=()=>reject(req.error);
-  });
-}
-
-async function dbGetAll(){
-  return await new Promise((resolve,reject)=>{
-    const req = tx(STORE).getAll();
-    req.onsuccess=()=>resolve(req.result||[]);
-    req.onerror=()=>reject(req.error);
-  });
-}
-
-async function dbClearAll(){
-  return await new Promise((resolve,reject)=>{
-    const req = tx(STORE,'readwrite').clear();
-    req.onsuccess=()=>resolve();
-    req.onerror=()=>reject(req.error);
-  });
-}
-
-async function dbPutMany(objs){
-  // Inserta en batches para no congelar
-  const B = 1200;
-  for(let i=0;i<objs.length;i+=B){
-    const chunk = objs.slice(i, i+B);
-    await new Promise((resolve,reject)=>{
-      const store = tx(STORE,'readwrite');
-      for(const o of chunk) store.add(o);
-      store.transaction.oncomplete = ()=>resolve();
-      store.transaction.onerror = ()=>reject(store.transaction.error);
-    });
-  }
-}
-
-async function dbDeleteMany(ids){
-  const B=1200;
-  for(let i=0;i<ids.length;i+=B){
-    const chunk = ids.slice(i,i+B);
-    await new Promise((resolve,reject)=>{
-      const store = tx(STORE,'readwrite');
-      for(const id of chunk) store.delete(id);
-      store.transaction.oncomplete=()=>resolve();
-      store.transaction.onerror=()=>reject(store.transaction.error);
-    });
-  }
-}
-
-async function dbUpdateMany(ids, patchFn){
-  // patchFn(contact)->contact
-  const B=600;
-  for(let i=0;i<ids.length;i+=B){
-    const chunk = ids.slice(i,i+B);
-    await new Promise((resolve,reject)=>{
-      const store = tx(STORE,'readwrite');
-      let pending = chunk.length;
-      if(!pending) return resolve();
-      chunk.forEach(id=>{
-        const getReq = store.get(id);
-        getReq.onsuccess=()=>{
-          const obj = getReq.result;
-          if(obj){
-            const upd = patchFn(obj);
-            store.put(upd);
-          }
-          pending--;
-          if(pending===0) resolve();
-        };
-        getReq.onerror=()=>{ pending--; if(pending===0) resolve(); };
+      out.push({
+        name: (origin.prefix ? origin.prefix : '') + name,
+        number: e164
       });
-      store.transaction.onerror=()=>reject(store.transaction.error);
-    });
-  }
-}
-
-/* ---------- Parsing CSV contacts ---------- */
-function normalizeTags(tags){
-  if(!tags) return '';
-  return String(tags).split(',')
-    .map(t=>t.trim()).filter(Boolean)
-    .join(',');
-}
-function detectIdx(headersLower, names){
-  for(let i=0;i<headersLower.length;i++){
-    const h = headersLower[i];
-    if(names.some(n => h===n || h.includes(n))) return i;
-  }
-  return -1;
-}
-function parseContactsFromWorker(headers, rows){
-  const hl = headers.map(h=>String(h||'').toLowerCase().trim());
-
-  // expected
-  const iNumber = detectIdx(hl, ['number','telefono','tel','phone']);
-  const iName   = detectIdx(hl, ['name','nombre']);
-  const iEmail  = detectIdx(hl, ['email']);
-  const iTags   = detectIdx(hl, ['tags','etiquetas']);
-  const iMeta   = detectIdx(hl, ['metadata','meta','data']);
-
-  const out = [];
-  for(const cols of rows){
-    const number = String(cols[iNumber] ?? '').trim();
-    const name   = String(cols[iName] ?? '').trim();
-    if(!number && !name) continue;
-
-    out.push({
-      number: number.replace(/^\+/,''),
-      name,
-      email: String(cols[iEmail] ?? '').trim(),
-      tags: normalizeTags(String(cols[iTags] ?? '').trim()),
-      metadata: String(cols[iMeta] ?? '').trim(),
-      status: 'A CONTACTAR',
-      note: '',
-      createdAt: Date.now()
-    });
-  }
-  return out;
-}
-
-/* ---------- Filters / Render ---------- */
-function statusBadge(status){
-  const s = String(status||'').toUpperCase();
-  if(s==='JUGANDO') return `<span class="badge b-active">JUGANDO</span>`;
-  if(s==='A CONTACTAR') return `<span class="badge b-contact">A CONTACTAR</span>`;
-  if(s==='EN PROCESO') return `<span class="badge b-proc">EN PROCESO</span>`;
-  if(s==='RECUPERADO') return `<span class="badge b-ok">RECUPERADO</span>`;
-  if(s==='NO INTERESA') return `<span class="badge b-contact">NO INTERESA</span>`;
-  return `<span class="badge b-proc">${esc(s||'-')}</span>`;
-}
-function applyFilters(){
-  const q = String(document.getElementById('qSearch').value||'').toLowerCase().trim();
-  const st = String(document.getElementById('fStatus').value||'').trim();
-  const tag = String(document.getElementById('fTag').value||'').toLowerCase().trim();
-
-  let arr = CACHE.list;
-  if(st) arr = arr.filter(x => String(x.status||'') === st);
-  if(tag) arr = arr.filter(x => (String(x.tags||'').toLowerCase().split(',').map(t=>t.trim())).includes(tag));
-  if(q){
-    arr = arr.filter(x => {
-      const hay = (String(x.name||'')+' '+String(x.number||'')+' '+String(x.tags||'')+' '+String(x.metadata||'')+' '+String(x.note||'')).toLowerCase();
-      return hay.includes(q);
-    });
-  }
-  CACHE.filtered = arr;
-  if(CACHE.page > Math.max(1, Math.ceil(arr.length / CACHE.pageSize))) CACHE.page = 1;
-}
-
-function updateKPIs(){
-  document.getElementById('kTotal').textContent = CACHE.list.length.toLocaleString('es-AR');
-  document.getElementById('kFiltered').textContent = CACHE.filtered.length.toLocaleString('es-AR');
-  document.getElementById('kSelected').textContent = CACHE.selected.size.toLocaleString('es-AR');
-  document.getElementById('kView').textContent = (CACHE.view==='table' ? 'Tabla' : 'Cards');
-}
-
-function render(){
-  applyFilters();
-  updateKPIs();
-
-  const totalPages = Math.max(1, Math.ceil(CACHE.filtered.length / CACHE.pageSize));
-  const page = Math.min(CACHE.page, totalPages);
-  CACHE.page = page;
-
-  document.getElementById('pageInfo').textContent = `${page}/${totalPages}`;
-  document.getElementById('viewMode').value = CACHE.view;
-  document.getElementById('pageSize').value = String(CACHE.pageSize);
-
-  const start = (page-1)*CACHE.pageSize;
-  const end = start + CACHE.pageSize;
-  const slice = CACHE.filtered.slice(start, end);
-
-  const results = document.getElementById('results');
-  if(CACHE.view === 'table'){
-    let html = `
-      <table>
-        <thead>
-          <tr>
-            <th style="width:44px"><input class="chk" type="checkbox" id="chkAllThisPage"/></th>
-            <th>Nombre</th>
-            <th>Teléfono</th>
-            <th>Estado</th>
-            <th>Tags</th>
-            <th>Nota</th>
-            <th style="width:160px">Acciones</th>
-          </tr>
-        </thead>
-        <tbody>`;
-    for(const r of slice){
-      const checked = CACHE.selected.has(r.id) ? 'checked' : '';
-      html += `
-        <tr>
-          <td><input class="chk rowChk" data-id="${r.id}" type="checkbox" ${checked}/></td>
-          <td><b>${esc(r.name||'')}</b><div class="muted" style="font-size:12px">${esc(r.metadata||'')}</div></td>
-          <td>${esc(r.number ? ('+'+String(r.number).replace(/^\+/,'') ) : '')}</td>
-          <td>${statusBadge(r.status)}</td>
-          <td>${esc(r.tags||'')}</td>
-          <td>${esc(r.note||'')}</td>
-          <td>
-            <button class="btn" data-act="edit" data-id="${r.id}">Editar</button>
-            <button class="btn red" data-act="del" data-id="${r.id}">Borrar</button>
-          </td>
-        </tr>`;
     }
-    html += `</tbody></table>
-      <div class="muted" style="font-size:12px;margin-top:10px">
-        Mostrando <b>${slice.length.toLocaleString('es-AR')}</b> de <b>${CACHE.filtered.length.toLocaleString('es-AR')}</b> filtrados (paginado).
-      </div>`;
-    results.innerHTML = html;
-  }else{
-    let html = `<div class="cards">`;
-    for(const r of slice){
-      const checked = CACHE.selected.has(r.id) ? 'checked' : '';
-      html += `
-        <div class="cCard">
-          <div class="cTop">
-            <div>
-              <div class="cAlias">${esc(r.name||'')}</div>
-              <div class="cPhone">${esc(r.number ? ('+'+String(r.number).replace(/^\+/,'') ) : '')}</div>
-            </div>
-            <div style="display:flex;flex-direction:column;align-items:flex-end;gap:8px">
-              <input class="chk rowChk" data-id="${r.id}" type="checkbox" ${checked}/>
-              ${statusBadge(r.status)}
-            </div>
-          </div>
-          <div class="cMeta"><b>Tags:</b> ${esc(r.tags||'')}<br/><b>Nota:</b> ${esc(r.note||'') || '<span class="muted">—</span>'}</div>
-          <div class="cActions">
-            <button class="btn" data-act="edit" data-id="${r.id}">Editar</button>
-            <button class="btn cyan" data-act="copy" data-id="${r.id}">Copiar WhatsApp</button>
-            <button class="btn red" data-act="del" data-id="${r.id}">Borrar</button>
-          </div>
-        </div>`;
+    return out;
+  }
+
+  function csvEscape(v){
+    const s = String(v ?? '');
+    if (/[",\n]/.test(s)) return '"' + s.replace(/"/g,'""') + '"';
+    return '"' + s + '"';
+  }
+
+  function downloadFile(content, fileName, mimeType){
+    const bom = mimeType.includes('csv') ? '\uFEFF' : '';
+    const blob = new Blob([bom + content], { type: mimeType });
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = fileName;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+  }
+
+  document.getElementById('vcfConvert').onclick = async () => {
+    const files = Array.from(vcfInput.files || []);
+    if (!files.length) return showToast('Subí al menos un VCF', 2200);
+
+    const prefix = document.getElementById('vcfPrefix').value.trim();
+    const defaultCountry = document.getElementById('vcfCountry').value.trim() || '+54';
+    const dedup = document.getElementById('vcfDedup').checked;
+    const forcePlus = document.getElementById('vcfKeepPlus').checked;
+
+    vcfFill.style.width = '0%';
+    showToast('Convirtiendo VCF…', 6000);
+
+    let all = [];
+    let done = 0;
+
+    for (const f of files) {
+      const text = await f.text();
+      const parsed = parseVCFToWhaticket(text, { prefix, defaultCountry, forcePlus });
+      all.push(...parsed);
+      done++;
+      vcfFill.style.width = Math.round((done / files.length) * 100) + '%';
+      await new Promise(r => setTimeout(r, 0)); // yield
     }
-    html += `</div>
-      <div class="muted" style="font-size:12px;margin-top:10px">
-        Mostrando <b>${slice.length.toLocaleString('es-AR')}</b> de <b>${CACHE.filtered.length.toLocaleString('es-AR')}</b> filtrados (paginado).
-      </div>`;
-    results.innerHTML = html;
+
+    let dup = 0;
+    if (dedup) {
+      const seen = new Set();
+      const cleaned = [];
+      for (const c of all) {
+        const k = String(c.number || '').replace(/\D/g,'');
+        if (!k) continue;
+        if (seen.has(k)) { dup++; continue; }
+        seen.add(k);
+        cleaned.push(c);
+      }
+      all = cleaned;
+    }
+
+    vcfKpiFiles.textContent = files.length.toLocaleString('es-AR');
+    vcfKpiContacts.textContent = all.length.toLocaleString('es-AR');
+    vcfKpiDup.textContent = dup.toLocaleString('es-AR');
+
+    const csv = "name,number\n" + all.map(c => `${csvEscape(c.name)},${csvEscape(c.number)}`).join("\n") + "\n";
+    const name = `whaticket_from_vcf_${new Date().toISOString().slice(0,10)}.csv`;
+    downloadFile(csv, name, 'text/csv;charset=utf-8;');
+
+    vcfOutNote.innerHTML = `<b>Listo:</b> se generó el CSV Whaticket (<b>name,number</b>). Contactos: <b>${all.length.toLocaleString('es-AR')}</b>.`;
+    showToast('CSV descargado', 1800);
+  };
+
+  /* =========================================================
+     Tool 2: Gestor Masivo (mejorado) + NUEVAS importaciones:
+     - Contactos Whaticket CSV: number,name,email,tags,metadata
+     - Operaciones de agentes CSV: Fecha,Estado,Cantidad,Tipo,Alias,Balance
+     - Planilla blanca: usuarios,estado de revision, ... (formato grande)
+     - CSV simple 2 col: name,number
+  ========================================================= */
+
+  const GM = {
+    contacts: [],
+    filtered: [],
+    files: [],
+    currentView: 'cards',
+    currentPage: 1,
+    itemsPerPage: 50,
+    currentFilter: 'all',
+    tinderIndex: 0,
+    selected: new Set(),
+    activeAliases: new Set(),          // de operaciones de agentes
+    settings: {
+      keepLocal: true
+    }
+  };
+
+  const gmUpload = document.getElementById('gmUpload');
+  const gmMain = document.getElementById('gmMain');
+
+  const gmFileInput = document.getElementById('gmFileInput');
+  const gmOrigin = document.getElementById('gmOrigin');
+  const gmImportMode = document.getElementById('gmImportMode');
+  const gmApplyOpsToStatus = document.getElementById('gmApplyOpsToStatus');
+  const gmKeepLocal = document.getElementById('gmKeepLocal');
+  const gmProcess = document.getElementById('gmProcess');
+  const gmFill = document.getElementById('gmFill');
+  const gmImportInfo = document.getElementById('gmImportInfo');
+
+  const gmSearch = document.getElementById('gmSearch');
+  const gmPagination = document.getElementById('gmPagination');
+
+  const gmCards = document.getElementById('gmCards');
+  const gmList = document.getElementById('gmList');
+  const gmTinder = document.getElementById('gmTinder');
+
+  const gmProgress = document.getElementById('gmProgress');
+  const gmProgressFill = document.getElementById('gmProgressFill');
+  const gmProgressPct = document.getElementById('gmProgressPct');
+  const gmReviewed = document.getElementById('gmReviewed');
+  const gmCount = document.getElementById('gmCount');
+
+  const gmBulk = document.getElementById('gmBulk');
+  const gmBulkCount = document.getElementById('gmBulkCount');
+  const gmBulkStatus = document.getElementById('gmBulkStatus');
+
+  const gmExportModal = document.getElementById('gmExportModal');
+  const gmExportFilteredCount = document.getElementById('gmExportFilteredCount');
+  const gmExportAllCount = document.getElementById('gmExportAllCount');
+
+  const gmAddModal = document.getElementById('gmAddModal');
+  const gmMoreInput = document.getElementById('gmMoreInput');
+  const gmMoreOrigin = document.getElementById('gmMoreOrigin');
+  const gmMoreMode = document.getElementById('gmMoreMode');
+  const gmMoreApplyOps = document.getElementById('gmMoreApplyOps');
+  const gmMoreFill = document.getElementById('gmMoreFill');
+
+  // Utils
+  const $all = (sel, root=document) => Array.from(root.querySelectorAll(sel));
+  const nowId = () => `id_${Date.now()}_${Math.random().toString(36).slice(2,9)}`;
+
+  function cleanAliasBase(s){
+    if (!s) return '';
+    return String(s)
+      .toLowerCase()
+      .trim()
+      .replace(/\uFEFF/g,'')
+      .replace(/\s+/g,' ')
+      .replace(/["']/g,'')
+      .replace(/^[^a-z0-9]+|[^a-z0-9]+$/g,'');
+  }
+  function aliasFromWhaticketName(name){
+    const raw = String(name||'').trim();
+    const low = raw.toLowerCase();
+    if (low.includes('//')) return cleanAliasBase(low.split('//')[0]);
+    return cleanAliasBase(low);
+  }
+  function titularFromWhaticketName(name){
+    const raw = String(name||'').trim();
+    const low = raw.toLowerCase();
+    if (!low.includes('//')) return '';
+    return cleanAliasBase(low.split('//').slice(1).join('//'));
   }
 
-  // wire events (delegación)
-  results.querySelectorAll('.rowChk').forEach(chk=>{
-    chk.onchange = ()=>{
-      const id = Number(chk.getAttribute('data-id'));
-      if(chk.checked) CACHE.selected.add(id);
-      else CACHE.selected.delete(id);
-      updateKPIs();
-    };
-  });
+  function normalizePhone(raw){
+    const s = String(raw||'').trim();
+    if (!s) return { digits:'', e164:'' };
+    let digits = s.replace(/\D/g,'');
+    if (!digits) return { digits:'', e164:'' };
 
-  const chkAll = document.getElementById('chkAllThisPage');
-  if(chkAll){
-    // mark based on all selected in slice
-    chkAll.checked = slice.length>0 && slice.every(x=>CACHE.selected.has(x.id));
-    chkAll.onchange = ()=>{
-      for(const r of slice){
-        if(chkAll.checked) CACHE.selected.add(r.id);
-        else CACHE.selected.delete(r.id);
-      }
-      render(); // refresh checkboxes state
-    };
+    if (s.startsWith('00')) {
+      const intl = '+' + digits.slice(2);
+      return { digits: intl.replace(/\D/g,''), e164: intl };
+    }
+    let e164 = '';
+    if (digits.startsWith('54')) e164 = '+'+digits;
+    else {
+      if (digits.startsWith('0') && digits.length >= 10) digits = digits.slice(1);
+      digits = digits.replace(/^(\d{2,4})15/, '$1');
+      e164 = '+54' + digits;
+    }
+    return { digits: e164.replace(/\D/g,''), e164 };
   }
 
-  results.querySelectorAll('button[data-act]').forEach(btn=>{
-    btn.onclick = async ()=>{
-      const act = btn.getAttribute('data-act');
-      const id = Number(btn.getAttribute('data-id'));
-      if(act==='del'){
-        if(!confirm('¿Borrar este contacto?')) return;
-        await dbDeleteMany([id]);
-        await reloadCache();
-        showToast('Contacto borrado', 1400);
+  function detectDelimiter(text){
+    const lines = String(text||'').replace(/\r\n/g,'\n').replace(/\r/g,'\n').split('\n').filter(l => l.trim() !== '');
+    if (/^sep=;/i.test(lines[0]||'')) return ';';
+    if (/^sep=,/i.test(lines[0]||'')) return ',';
+    const head = lines.slice(0,5).join('\n');
+    const commas = (head.match(/,/g)||[]).length;
+    const semis = (head.match(/;/g)||[]).length;
+    return semis > commas ? ';' : ',';
+  }
+
+  function parseCSVLine(line, delim){
+    const out = [];
+    let cur = '';
+    let inQ = false;
+    for (let i=0;i<line.length;i++){
+      const ch = line[i];
+      if (ch === '"') {
+        if (inQ && line[i+1] === '"') { cur += '"'; i++; }
+        else inQ = !inQ;
+        continue;
       }
-      if(act==='copy'){
-        const r = CACHE.list.find(x=>x.id===id);
-        const num = r?.number ? String(r.number).replace(/^\+/,'') : '';
-        const url = num ? `https://wa.me/${num}` : '';
-        try{
-          await navigator.clipboard.writeText(url || num);
-          showToast('Copiado', 1200);
-        }catch{
-          showToast('No se pudo copiar', 1600);
+      if (ch === delim && !inQ) { out.push(cur); cur=''; continue; }
+      cur += ch;
+    }
+    out.push(cur);
+    return out.map(v => String(v ?? '').trim());
+  }
+
+  function sniffCsvType(headersLower){
+    // Ops agentes
+    const isOps = headersLower.includes('fecha') && headersLower.includes('alias') && (headersLower.includes('cantidad') || headersLower.includes('monto') || headersLower.includes('importe'));
+    // Planilla blanca (export grande)
+    const isSheet = headersLower.includes('usuarios') && (headersLower.includes('estado de revision') || headersLower.includes('estado actual'));
+    // Whaticket contacts
+    const isWtk = headersLower.includes('number') && headersLower.includes('name');
+    // Simple 2 columns
+    const isSimple = (headersLower.includes('name') && headersLower.includes('number')) || (headersLower.includes('nombre') && (headersLower.includes('numero') || headersLower.includes('tel') || headersLower.includes('telefono')));
+    if (isOps) return 'ops';
+    if (isSheet) return 'sheet';
+    if (isWtk) return 'contacts';
+    if (isSimple) return 'simple2';
+    return 'unknown';
+  }
+
+  function parseNumberLoose(v){
+    let s = String(v ?? '').trim();
+    if (!s) return 0;
+    s = s.replace(/\s+/g,'').replace(/[^0-9\-,.]/g,'');
+    if (s.includes(',') && s.includes('.')) s = s.replace(/,/g,'');
+    if (s.includes(',') && !s.includes('.')) s = s.replace(',', '.');
+    const n = parseFloat(s);
+    return isNaN(n) ? 0 : n;
+  }
+
+  // Yield helper to keep Chrome responsive
+  async function yieldEvery(i, step=1200){
+    if (i > 0 && i % step === 0) await new Promise(r => setTimeout(r, 0));
+  }
+
+  // Storage
+  function loadGM(){
+    try{
+      const raw = localStorage.getItem('nexo_smoky_gm_contacts');
+      const rawAliases = localStorage.getItem('nexo_smoky_gm_activeAliases');
+      if (raw) {
+        const data = JSON.parse(raw);
+        if (Array.isArray(data) && data.length) GM.contacts = data;
+      }
+      if (rawAliases) {
+        const a = JSON.parse(rawAliases);
+        if (Array.isArray(a)) GM.activeAliases = new Set(a);
+      }
+    }catch(e){ console.warn('No se pudo cargar localStorage:', e); }
+  }
+  function saveGM(){
+    if (!GM.settings.keepLocal) return;
+    try{
+      localStorage.setItem('nexo_smoky_gm_contacts', JSON.stringify(GM.contacts));
+      localStorage.setItem('nexo_smoky_gm_activeAliases', JSON.stringify(Array.from(GM.activeAliases)));
+    }catch(e){
+      console.warn('No se pudo guardar (quizás demasiado grande):', e);
+      showToast('Aviso: no se pudo guardar en el navegador (archivo muy grande).', 2800);
+    }
+  }
+  function clearGMStorage(){
+    localStorage.removeItem('nexo_smoky_gm_contacts');
+    localStorage.removeItem('nexo_smoky_gm_activeAliases');
+  }
+
+  // Contacts importers
+  async function importWhaticketContacts(text, origin){
+    const delim = detectDelimiter(text);
+    const lines = String(text||'').replace(/\uFEFF/g,'').replace(/\r\n/g,'\n').replace(/\r/g,'\n')
+      .split('\n').filter(l => l.trim() !== '' && !/^sep=/i.test(l.trim()));
+    if (!lines.length) return { added:0, updated:0, skipped:0 };
+
+    const headers = parseCSVLine(lines[0], delim);
+    const hl = headers.map(h => h.toLowerCase().trim());
+
+    const idxNumber = hl.indexOf('number');
+    const idxName = hl.indexOf('name');
+    const idxEmail = hl.indexOf('email');
+    const idxTags = hl.indexOf('tags');
+    const idxMeta = hl.indexOf('metadata');
+
+    let added=0, updated=0, skipped=0;
+
+    // map existing by phone digits (strongest), else by alias
+    const byPhone = new Map();
+    const byAlias = new Map();
+    GM.contacts.forEach(c => {
+      const k = String(c.phone || '').replace(/\D/g,'');
+      if (k) byPhone.set(k, c);
+      const a = cleanAliasBase(c.alias || '');
+      if (a) byAlias.set(a, c);
+    });
+
+    for (let i=1;i<lines.length;i++){
+      const cols = parseCSVLine(lines[i], delim);
+      const numberRaw = idxNumber >= 0 ? (cols[idxNumber]||'') : '';
+      const nameRaw = idxName >= 0 ? (cols[idxName]||'') : '';
+      if (!numberRaw && !nameRaw) { skipped++; continue; }
+
+      const norm = normalizePhone(numberRaw);
+      const alias = aliasFromWhaticketName(nameRaw);
+      const titular = titularFromWhaticketName(nameRaw);
+
+      const keyPhone = norm.digits;
+      const existing = (keyPhone && byPhone.get(keyPhone)) || (alias && byAlias.get(alias)) || null;
+
+      if (existing) {
+        // update missing fields
+        if (!existing.phone && norm.digits) existing.phone = norm.digits;
+        if (!existing.phoneE164 && norm.e164) existing.phoneE164 = norm.e164;
+
+        if (nameRaw && (!existing.name || existing.name.toLowerCase() === 'sin nombre')) existing.name = nameRaw;
+        if (alias && !existing.alias) existing.alias = alias;
+        if (titular && !existing.titular) existing.titular = titular;
+
+        if (origin) existing.origin = origin;
+
+        // Keep email/tags/metadata (prefer newest if empty)
+        if (idxEmail>=0 && cols[idxEmail] && !existing.email) existing.email = cols[idxEmail];
+        if (idxTags>=0 && cols[idxTags] && !existing.tags) existing.tags = cols[idxTags];
+        if (idxMeta>=0 && cols[idxMeta] && !existing.metadata) existing.metadata = cols[idxMeta];
+
+        existing.lastUpdated = new Date().toISOString();
+        updated++;
+      } else {
+        const c = {
+          id: nowId(),
+          name: nameRaw || (norm.e164 || norm.digits || 'Sin nombre'),
+          alias,
+          titular,
+          phone: norm.digits || '',
+          phoneE164: norm.e164 || '',
+          email: idxEmail>=0 ? String(cols[idxEmail]||'').trim() : '',
+          tags: idxTags>=0 ? String(cols[idxTags]||'').trim() : '',
+          metadata: idxMeta>=0 ? String(cols[idxMeta]||'').trim() : '',
+          origin: origin || 'Whaticket',
+          status: 'sin revisar',
+          lastUpdated: new Date().toISOString()
+        };
+        GM.contacts.push(c);
+        if (c.phone) byPhone.set(String(c.phone).replace(/\D/g,''), c);
+        if (c.alias) byAlias.set(cleanAliasBase(c.alias), c);
+        added++;
+      }
+
+      await yieldEvery(i, 1500);
+    }
+
+    return { added, updated, skipped };
+  }
+
+  async function importVCFContacts(text, origin){
+    const contacts = [];
+    const vcards = String(text||'').split(/END:VCARD/i).filter(v => v.trim());
+    for (const card of vcards) {
+      const lines = card.split(/\r\n|\r|\n/).map(l => l.trim()).filter(Boolean);
+      let name = 'Sin nombre';
+      let phone = '';
+
+      const fn = lines.find(l => l.toUpperCase().startsWith('FN:') || l.toUpperCase().startsWith('FN;'));
+      const n  = lines.find(l => l.toUpperCase().startsWith('N:') || l.toUpperCase().startsWith('N;'));
+      const tel = lines.find(l => l.toUpperCase().startsWith('TEL'));
+      if (fn) name = fn.slice(fn.indexOf(':')+1).trim() || 'Sin nombre';
+      else if (n) {
+        const raw = n.slice(n.indexOf(':')+1);
+        const parts = raw.split(';').map(p => p.trim()).filter(Boolean);
+        name = [parts[1], parts[0]].join(' ').trim() || 'Sin nombre';
+      }
+      if (tel) phone = tel.slice(tel.indexOf(':')+1).trim();
+
+      const norm = normalizePhone(phone);
+      if (!norm.digits) continue;
+
+      contacts.push({
+        id: nowId(),
+        name,
+        alias: cleanAliasBase(name), // best effort
+        titular: '',
+        phone: norm.digits,
+        phoneE164: norm.e164,
+        email: '',
+        tags: '',
+        metadata: '',
+        origin: origin || 'VCF',
+        status: 'sin revisar',
+        lastUpdated: new Date().toISOString()
+      });
+    }
+
+    // Dedup against existing by phone
+    const byPhone = new Map();
+    GM.contacts.forEach(c => { const k = String(c.phone||'').replace(/\D/g,''); if (k) byPhone.set(k, c); });
+
+    let added=0, updated=0;
+    for (let i=0;i<contacts.length;i++){
+      const c = contacts[i];
+      const k = String(c.phone||'').replace(/\D/g,'');
+      if (byPhone.has(k)) {
+        const ex = byPhone.get(k);
+        // update name if better
+        if (c.name && (!ex.name || ex.name.toLowerCase() === 'sin nombre')) ex.name = c.name;
+        if (!ex.phoneE164 && c.phoneE164) ex.phoneE164 = c.phoneE164;
+        ex.lastUpdated = new Date().toISOString();
+        updated++;
+      } else {
+        GM.contacts.push(c);
+        byPhone.set(k, c);
+        added++;
+      }
+      await yieldEvery(i, 1000);
+    }
+    return { added, updated, skipped: 0 };
+  }
+
+  async function importSimple2Cols(text, origin){
+    const delim = detectDelimiter(text);
+    const lines = String(text||'').replace(/\uFEFF/g,'').replace(/\r\n/g,'\n').replace(/\r/g,'\n')
+      .split('\n').filter(l => l.trim() !== '' && !/^sep=/i.test(l.trim()));
+    if (!lines.length) return { added:0, updated:0, skipped:0 };
+
+    const headers = parseCSVLine(lines[0], delim);
+    const hl = headers.map(h => h.toLowerCase().trim());
+    let nameIdx = hl.findIndex(h => h === 'name' || h.includes('nombre') || h.includes('usuario'));
+    let numIdx  = hl.findIndex(h => h === 'number' || h.includes('numero') || h.includes('tel') || h.includes('phone'));
+    if (nameIdx < 0 || numIdx < 0) { nameIdx = 0; numIdx = 1; }
+
+    const byPhone = new Map();
+    GM.contacts.forEach(c => { const k = String(c.phone||'').replace(/\D/g,''); if (k) byPhone.set(k, c); });
+
+    let added=0, updated=0, skipped=0;
+    for (let i=1;i<lines.length;i++){
+      const cols = parseCSVLine(lines[i], delim);
+      const name = String(cols[nameIdx]||'').trim();
+      const rawNum = String(cols[numIdx]||'').trim();
+      if (!name && !rawNum) { skipped++; continue; }
+
+      const norm = normalizePhone(rawNum);
+      if (!norm.digits) { skipped++; continue; }
+      const key = norm.digits;
+      const ex = byPhone.get(key);
+
+      if (ex) {
+        if (name && (!ex.name || ex.name.toLowerCase()==='sin nombre')) ex.name = name;
+        if (!ex.phoneE164 && norm.e164) ex.phoneE164 = norm.e164;
+        if (origin) ex.origin = origin;
+        ex.lastUpdated = new Date().toISOString();
+        updated++;
+      } else {
+        const c = {
+          id: nowId(),
+          name: name || norm.e164 || norm.digits,
+          alias: cleanAliasBase(name || ''),
+          titular: '',
+          phone: norm.digits,
+          phoneE164: norm.e164,
+          email: '',
+          tags: '',
+          metadata: '',
+          origin: origin || 'CSV',
+          status: 'sin revisar',
+          lastUpdated: new Date().toISOString()
+        };
+        GM.contacts.push(c);
+        byPhone.set(key, c);
+        added++;
+      }
+
+      await yieldEvery(i, 1500);
+    }
+    return { added, updated, skipped };
+  }
+
+  // Operaciones de agentes -> activa alias
+  async function importOpsAgents(text){
+    const delim = detectDelimiter(text);
+    const lines = String(text||'').replace(/\uFEFF/g,'').replace(/\r\n/g,'\n').replace(/\r/g,'\n')
+      .split('\n').filter(l => l.trim() !== '' && !/^sep=/i.test(l.trim()));
+    if (!lines.length) return { active:0, rows:0 };
+
+    const headers = parseCSVLine(lines[0], delim);
+    const hl = headers.map(h => h.toLowerCase().trim());
+
+    const idxAlias = hl.findIndex(h => h === 'alias' || h.includes('alias'));
+    const idxCant  = hl.findIndex(h => h === 'cantidad' || h.includes('cantidad') || h.includes('monto') || h.includes('importe'));
+    // ignore others
+
+    const aliasIdx = idxAlias >= 0 ? idxAlias : 4; // expected column
+    const cantIdx = idxCant >= 0 ? idxCant : 2;
+
+    let rows = 0;
+    for (let i=1;i<lines.length;i++){
+      const cols = parseCSVLine(lines[i], delim);
+      const aliasRaw = cols[aliasIdx] ?? '';
+      const alias = cleanAliasBase(aliasRaw);
+      if (!alias) continue;
+
+      const monto = parseNumberLoose(cols[cantIdx] ?? '');
+      // consider active if has monto > 0
+      if (monto > 0) GM.activeAliases.add(alias);
+      rows++;
+
+      await yieldEvery(i, 2200);
+    }
+    return { active: GM.activeAliases.size, rows };
+  }
+
+  function applyOpsToStatuses(){
+    // Mark contacts with alias in activeAliases as "jugando"
+    let changed = 0;
+    const set = GM.activeAliases;
+    for (const c of GM.contacts) {
+      const a = cleanAliasBase(c.alias || aliasFromWhaticketName(c.name) || '');
+      if (a) c.alias = a;
+      if (a && set.has(a)) {
+        if (c.status !== 'jugando') {
+          c.status = 'jugando';
+          c.lastUpdated = new Date().toISOString();
+          changed++;
         }
       }
-      if(act==='edit'){
-        const r = CACHE.list.find(x=>x.id===id);
-        if(!r) return;
-        const newStatus = prompt('Estado (A CONTACTAR / EN PROCESO / RECUPERADO / JUGANDO / NO INTERESA):', r.status||'A CONTACTAR');
-        if(newStatus===null) return;
-        const newTags = prompt('Tags (coma):', r.tags||'');
-        if(newTags===null) return;
-        const newNote = prompt('Nota:', r.note||'');
-        if(newNote===null) return;
-
-        await dbUpdateMany([id], (o)=>{
-          o.status = String(newStatus||'').trim() || o.status;
-          o.tags = normalizeTags(newTags);
-          o.note = String(newNote||'').trim();
-          return o;
-        });
-        await reloadCache();
-        showToast('Actualizado', 1200);
-      }
-    };
-  });
-}
-
-/* ---------- Load / Refresh ---------- */
-async function reloadCache(){
-  const list = await dbGetAll();
-  // stable sort by id
-  list.sort((a,b)=> (a.id||0) - (b.id||0));
-  CACHE.list = list;
-  // clean selection (remove deleted ids)
-  const ids = new Set(list.map(x=>x.id));
-  CACHE.selected.forEach(id=>{ if(!ids.has(id)) CACHE.selected.delete(id); });
-  render();
-  document.getElementById('dbState').textContent = `DB: ${list.length.toLocaleString('es-AR')} contactos`;
-}
-
-async function refreshView(){
-  if(!db) return;
-  await reloadCache();
-}
-
-/* ---------- Import CSV ---------- */
-const masivoBar = document.getElementById('masivoBar');
-const masivoProg = document.getElementById('masivoProg');
-const importInfo = document.getElementById('importInfo');
-
-document.getElementById('importCSVBtn').onclick = async ()=>{
-  const f = document.getElementById('csvContacts').files[0];
-  if(!f) return showToast('Seleccioná un CSV de contactos', 2400);
-
-  const append = document.getElementById('appendMode').checked;
-  showToast('Importando CSV…', 8000);
-  setBar(masivoBar, 2); masivoProg.textContent='2%';
-  importInfo.textContent = 'Leyendo archivo…';
-
-  const text = await f.text();
-  const w = makeWorker();
-
-  let parsedHeaders = [];
-  let parsedRows = [];
-
-  await new Promise((resolve,reject)=>{
-    w.onmessage = (e)=>{
-      const msg = e.data || {};
-      if(msg.type==='progress'){
-        setBar(masivoBar, msg.pct);
-        masivoProg.textContent = msg.pct + '%';
-        if(msg.headers?.length) parsedHeaders = msg.headers;
-        importInfo.textContent = `Parseando… ${msg.pct}% (delim "${msg.delim||'?'}")`;
-      }
-      if(msg.type==='done'){
-        parsedHeaders = msg.headers || [];
-        parsedRows = msg.rows || [];
-        setBar(masivoBar, 100);
-        masivoProg.textContent='100%';
-        resolve();
-      }
-      if(msg.type==='error'){ reject(new Error(msg.message)); }
-    };
-    w.postMessage({type:'parseCSV', text});
-  });
-
-  importInfo.textContent = 'Construyendo contactos…';
-  const contacts = parseContactsFromWorker(parsedHeaders, parsedRows);
-
-  if(!append){
-    await dbClearAll();
-    CACHE.selected.clear();
-  }
-
-  // Insert
-  importInfo.textContent = `Insertando ${contacts.length.toLocaleString('es-AR')}…`;
-  // update bar during insert
-  const total = contacts.length;
-  const B = 1200;
-  for(let i=0;i<contacts.length;i+=B){
-    const chunk = contacts.slice(i,i+B);
-    await dbPutMany(chunk);
-    const pct = Math.round((Math.min(i+B,total)*100)/Math.max(1,total));
-    setBar(masivoBar, pct);
-    masivoProg.textContent = pct + '%';
-    importInfo.textContent = `Insertando… ${pct}%`;
-    await new Promise(r=>setTimeout(r,0));
-  }
-
-  await reloadCache();
-  importInfo.textContent = `Listo: ${contacts.length.toLocaleString('es-AR')} importados.`;
-  showToast('Importación completa', 1800);
-};
-
-/* ---------- Export filtered ---------- */
-document.getElementById('exportFilteredBtn').onclick = ()=>{
-  if(!CACHE.list.length) return showToast('No hay contactos en DB', 2000);
-
-  applyFilters();
-  const arr = CACHE.filtered;
-
-  let csv = 'number,name,email,tags,metadata\\n';
-  for(const r of arr){
-    csv += [csvEscape(r.number), csvEscape(r.name), csvEscape(r.email), csvEscape(r.tags), csvEscape(r.metadata)].join(',') + '\\n';
-  }
-  downloadText(csv, `whaticket_filtrado_${new Date().toISOString().slice(0,10)}.csv`, 'text/csv;charset=utf-8;');
-  showToast('Exportado', 1400);
-};
-
-/* ---------- Backup / Clear ---------- */
-document.getElementById('dbClear').onclick = async ()=>{
-  if(!confirm('Esto borra TODOS los contactos guardados en este navegador. ¿Continuar?')) return;
-  await dbClearAll();
-  CACHE.selected.clear();
-  await reloadCache();
-  showToast('DB borrada', 1400);
-};
-
-document.getElementById('dbExportRaw').onclick = async ()=>{
-  const all = await dbGetAll();
-  downloadText(JSON.stringify(all), `nexo_smoky_backup_${new Date().toISOString().slice(0,10)}.json`, 'application/json;charset=utf-8;');
-  showToast('Backup descargado', 1400);
-};
-
-/* ---------- Bulk actions ---------- */
-document.getElementById('selAllPage').onclick = ()=>{
-  applyFilters();
-  const totalPages = Math.max(1, Math.ceil(CACHE.filtered.length / CACHE.pageSize));
-  const page = Math.min(CACHE.page, totalPages);
-  const start = (page-1)*CACHE.pageSize;
-  const slice = CACHE.filtered.slice(start, start + CACHE.pageSize);
-  slice.forEach(r=>CACHE.selected.add(r.id));
-  render();
-  showToast('Página seleccionada', 1200);
-};
-document.getElementById('selNone').onclick = ()=>{
-  CACHE.selected.clear();
-  render();
-  showToast('Selección limpia', 1200);
-};
-document.getElementById('deleteSel').onclick = async ()=>{
-  if(!CACHE.selected.size) return showToast('No hay seleccionados', 1500);
-  if(!confirm(`¿Borrar ${CACHE.selected.size} contactos seleccionados?`)) return;
-  await dbDeleteMany([...CACHE.selected]);
-  CACHE.selected.clear();
-  await reloadCache();
-  showToast('Borrados', 1400);
-};
-document.getElementById('applyBulk').onclick = async ()=>{
-  if(!CACHE.selected.size) return showToast('No hay seleccionados', 1500);
-  const st = String(document.getElementById('bulkStatus').value||'').trim();
-  const tagsAdd = normalizeTags(document.getElementById('bulkTags').value||'');
-  if(!st && !tagsAdd) return showToast('Elegí estado y/o tags', 1700);
-
-  showToast('Aplicando cambios…', 5000);
-  const ids = [...CACHE.selected];
-  await dbUpdateMany(ids, (o)=>{
-    if(st) o.status = st;
-    if(tagsAdd){
-      const cur = new Set(String(o.tags||'').split(',').map(t=>t.trim()).filter(Boolean));
-      tagsAdd.split(',').map(t=>t.trim()).filter(Boolean).forEach(t=>cur.add(t));
-      o.tags = [...cur].join(',');
     }
-    return o;
+    return changed;
+  }
+
+  // Planilla blanca import (actualiza estados por usuario/alias)
+  async function importPlanillaBlanca(text){
+    const delim = detectDelimiter(text);
+    const lines = String(text||'').replace(/\uFEFF/g,'').replace(/\r\n/g,'\n').replace(/\r/g,'\n')
+      .split('\n').filter(l => l.trim() !== '' && !/^sep=/i.test(l.trim()));
+    if (!lines.length) return { updated:0, added:0, rows:0 };
+
+    const headers = parseCSVLine(lines[0], delim);
+    const hl = headers.map(h => h.toLowerCase().trim());
+
+    const idxUsuario = hl.findIndex(h => h === 'usuarios' || h.includes('usuarios'));
+    const idxEstadoRev = hl.findIndex(h => h === 'estado de revision' || h.includes('estado de revision'));
+    const idxEstadoAct = hl.findIndex(h => h === 'estado actual' || h.includes('estado actual'));
+
+    const uIdx = idxUsuario >= 0 ? idxUsuario : 0;
+    const erIdx = idxEstadoRev >= 0 ? idxEstadoRev : 1;
+    const eaIdx = idxEstadoAct >= 0 ? idxEstadoAct : 3;
+
+    // map existing by alias / by name raw
+    const byAlias = new Map();
+    const byName = new Map();
+    GM.contacts.forEach(c => {
+      if (c.alias) byAlias.set(cleanAliasBase(c.alias), c);
+      const n = String(c.name||'').trim().toLowerCase();
+      if (n) byName.set(n, c);
+    });
+
+    const statusMap = (s) => {
+      const up = String(s||'').toUpperCase();
+      if (up.includes('NO ESTA EN WSP')) return 'sin wsp';
+      if (up.includes('MENSAJE ENVIADO')) return 'contactado';
+      if (up.includes('A CONTACTAR')) return 'sin revisar';
+      if (up.includes('EN CONTACTO')) return 'jugando';
+      if (up.includes('JUGANDO')) return 'jugando';
+      if (up.includes('ESTA CARGANDO')) return 'jugando'; // compat viejo
+      if (up.includes('ELIMINADO')) return 'no interesado';
+      return '';
+    };
+
+    let updated=0, added=0, rows=0;
+
+    for (let i=1;i<lines.length;i++){
+      const cols = parseCSVLine(lines[i], delim);
+      const userRaw = String(cols[uIdx] ?? '').trim();
+      if (!userRaw) continue;
+
+      const alias = cleanAliasBase(userRaw);
+      const s1 = statusMap(cols[erIdx] ?? '');
+      const s2 = statusMap(cols[eaIdx] ?? '');
+      const finalStatus = s1 || s2 || '';
+
+      rows++;
+
+      const keyName = userRaw.toLowerCase();
+      const existing = (alias && byAlias.get(alias)) || byName.get(keyName) || null;
+
+      if (existing) {
+        if (finalStatus && existing.status !== finalStatus) {
+          existing.status = finalStatus;
+          existing.lastUpdated = new Date().toISOString();
+          updated++;
+        }
+      } else {
+        // create placeholder if not exist
+        GM.contacts.push({
+          id: nowId(),
+          name: userRaw,
+          alias: alias,
+          titular: '',
+          phone: '',
+          phoneE164: '',
+          email: '',
+          tags: '',
+          metadata: '',
+          origin: 'Planilla Blanca',
+          status: finalStatus || 'sin revisar',
+          lastUpdated: new Date().toISOString()
+        });
+        byAlias.set(alias, GM.contacts[GM.contacts.length-1]);
+        byName.set(keyName, GM.contacts[GM.contacts.length-1]);
+        added++;
+      }
+
+      await yieldEvery(i, 2000);
+    }
+
+    return { updated, added, rows };
+  }
+
+  // Rendering helpers
+  function debounce(fn, wait=140){
+    let t;
+    return (...args) => { clearTimeout(t); t = setTimeout(() => fn(...args), wait); };
+  }
+
+  function filterGM(){
+    const term = (gmSearch.value || '').toLowerCase().trim();
+    let arr = GM.currentFilter === 'all' ? GM.contacts.slice() : GM.contacts.filter(c => c.status === GM.currentFilter);
+
+    if (term) {
+      arr = arr.filter(c => {
+        const n = String(c.name||'').toLowerCase();
+        const a = String(c.alias||'').toLowerCase();
+        const p = String(c.phone||'');
+        const e = String(c.phoneE164||'');
+        return n.includes(term) || a.includes(term) || p.includes(term) || e.includes(term);
+      });
+    }
+    GM.filtered = arr;
+    const totalPages = Math.max(1, Math.ceil(arr.length / GM.itemsPerPage));
+    if (GM.currentPage > totalPages) GM.currentPage = 1;
+  }
+
+  function updateStats(){
+    const total = GM.contacts.length;
+    const sinrev = GM.contacts.filter(c => c.status === 'sin revisar').length;
+    const contactado = GM.contacts.filter(c => c.status === 'contactado').length;
+    const jugando = GM.contacts.filter(c => c.status === 'jugando').length;
+    const nointer = GM.contacts.filter(c => c.status === 'no interesado').length;
+    const sinwsp = GM.contacts.filter(c => c.status === 'sin wsp').length;
+
+    document.getElementById('gmTotal').textContent = total.toLocaleString('es-AR');
+    document.getElementById('gmSinRevisar').textContent = sinrev.toLocaleString('es-AR');
+    document.getElementById('gmContactado').textContent = contactado.toLocaleString('es-AR');
+    document.getElementById('gmJugando').textContent = jugando.toLocaleString('es-AR');
+    document.getElementById('gmNoInter').textContent = nointer.toLocaleString('es-AR');
+    document.getElementById('gmSinWsp').textContent = sinwsp.toLocaleString('es-AR');
+  }
+
+  function updateProgress(){
+    const total = GM.contacts.length;
+    if (!total) { gmProgress.style.display='none'; return; }
+    gmProgress.style.display='block';
+    const reviewed = total - GM.contacts.filter(c => c.status === 'sin revisar').length;
+    const pct = Math.round((reviewed / total) * 100);
+    gmProgressFill.style.width = pct + '%';
+    gmProgressPct.textContent = pct + '%';
+    gmReviewed.textContent = reviewed.toLocaleString('es-AR') + ' revisados';
+    gmCount.textContent = total.toLocaleString('es-AR') + ' totales';
+  }
+
+  function statusButtonsHTML(contact){
+    const opts = [
+      ['sin revisar','Sin Revisar','fa-solid fa-clock','rgba(156,163,175,.22)','rgba(156,163,175,.55)'],
+      ['jugando','Jugando','fa-solid fa-gamepad','rgba(139,92,246,.18)','rgba(139,92,246,.55)'],
+      ['contactado','Contactado','fa-solid fa-check','rgba(16,185,129,.18)','rgba(16,185,129,.55)'],
+      ['no interesado','No Interesado','fa-solid fa-xmark','rgba(255,92,92,.18)','rgba(255,92,92,.55)'],
+      ['sin wsp','Sin WSP','fa-solid fa-ban','rgba(107,114,128,.18)','rgba(107,114,128,.55)']
+    ];
+    return `<div class="gmListActions">${
+      opts.map(([id,label,ic,bg,br])=>{
+        const active = contact.status === id;
+        const style = active ? `style="background:${bg}; border-color:${br}; color:${id==='no interesado'?'#ffd5d5':'#e5e7eb'}"` : '';
+        return `<button class="gmStatusBtn" data-status="${id}" ${style}><i class="${ic}"></i> ${label}</button>`;
+      }).join('')
+    }</div>`;
+  }
+
+  function createContactHTML(contact, type){
+    const displayPhone = contact.phoneE164 || contact.phone || 'Sin número';
+    const waPhone = String(contact.phone || '').replace(/\D/g,'');
+    const isSel = GM.selected.has(contact.id);
+
+    return `
+      <div class="${type==='card'?'gmCard':'gmItem'} ${isSel?'selected':''}" data-id="${contact.id}" data-status="${contact.status}">
+        <div class="gmHeader">
+          <div style="flex:1; min-width:0;">
+            <span class="gmName" data-field="name" title="Click: copiar • Doble click: editar">${escapeHtml(contact.name || '')}</span>
+            <span class="gmPhone" data-field="phone" title="Click: copiar • Doble click: editar">${escapeHtml(displayPhone)}</span>
+            <div style="margin-top:6px; color: var(--muted); font-weight:900; font-size: 12px;">
+              ${contact.alias ? `Alias: <span style="color: var(--accent2)">${escapeHtml(contact.alias)}</span>` : ''}
+              ${contact.titular ? ` • Titular: <span style="color: rgba(200,255,155,.95)">${escapeHtml(contact.titular)}</span>` : ''}
+            </div>
+          </div>
+          <div class="gmActions">
+            <div class="gmOrigin" title="Origen">${escapeHtml(contact.origin || '')}</div>
+            <button class="gmTrash" title="Eliminar"><i class="fa-solid fa-trash"></i></button>
+          </div>
+        </div>
+
+        ${waPhone ? `<a class="gmWhatsapp" href="https://wa.me/${waPhone}" target="_blank" onclick="event.stopPropagation();"><i class="fa-brands fa-whatsapp"></i> WhatsApp</a>` : ''}
+
+        ${type==='list' ? statusButtonsHTML(contact) : ''}
+
+        <div style="position:absolute; left:10px; top: 10px;">
+          <input type="checkbox" class="gmCheck" ${isSel?'checked':''} />
+        </div>
+      </div>
+    `;
+  }
+
+  function escapeHtml(s){
+    if (s === null || s === undefined) return '';
+    return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[c]);
+  }
+
+  function renderPagination(){
+    const totalPages = Math.ceil(GM.filtered.length / GM.itemsPerPage);
+    if (totalPages <= 1) { gmPagination.innerHTML=''; return; }
+    gmPagination.innerHTML = `
+      <button class="gmPageBtn" ${GM.currentPage===1?'disabled':''} data-page="${GM.currentPage-1}"><i class="fa-solid fa-chevron-left"></i></button>
+      <div style="color:var(--text2); font-weight:950;">Página ${GM.currentPage} de ${totalPages}</div>
+      <button class="gmPageBtn" ${GM.currentPage===totalPages?'disabled':''} data-page="${GM.currentPage+1}"><i class="fa-solid fa-chevron-right"></i></button>
+    `;
+  }
+
+  function updateBulkBar(){
+    const count = GM.selected.size;
+    gmBulk.classList.toggle('show', count > 0);
+    gmBulkCount.textContent = `${count} seleccionados`;
+
+    // select all (page)
+    const start = (GM.currentPage-1)*GM.itemsPerPage;
+    const page = GM.filtered.slice(start, start+GM.itemsPerPage);
+    const allSelected = page.length && page.every(c => GM.selected.has(c.id));
+    document.getElementById('gmSelectAll').checked = !!allSelected;
+  }
+
+  function renderView(){
+    // switch views
+    document.getElementById('gmCards').classList.toggle('active', GM.currentView==='cards');
+    document.getElementById('gmList').classList.toggle('active', GM.currentView==='list');
+    document.getElementById('gmTinder').classList.toggle('active', GM.currentView==='tinder');
+    gmPagination.style.display = GM.currentView === 'tinder' ? 'none' : 'flex';
+
+    if (GM.currentView === 'tinder') renderTinder();
+    else {
+      const start = (GM.currentPage-1)*GM.itemsPerPage;
+      const page = GM.filtered.slice(start, start+GM.itemsPerPage);
+
+      // Render via innerHTML (fast), then events by delegation
+      if (GM.currentView === 'cards') gmCards.innerHTML = page.map(c => createContactHTML(c,'card')).join('');
+      if (GM.currentView === 'list') gmList.innerHTML = page.map(c => createContactHTML(c,'list')).join('');
+
+      renderPagination();
+      updateBulkBar();
+    }
+  }
+
+  function renderTinder(){
+    const card = document.getElementById('gmTinderCard');
+    const nameEl = document.getElementById('gmTinderName');
+    const originEl = document.getElementById('gmTinderOrigin');
+    const phoneEl = document.getElementById('gmTinderPhone');
+    const waEl = document.getElementById('gmTinderWa');
+    const counterEl = document.getElementById('gmTinderCounter');
+
+    if (!GM.filtered.length){
+      nameEl.textContent='No hay contactos';
+      originEl.textContent='';
+      phoneEl.textContent='-';
+      waEl.href='#';
+      counterEl.textContent='0/0';
+      return;
+    }
+    if (GM.tinderIndex >= GM.filtered.length) GM.tinderIndex = 0;
+
+    const c = GM.filtered[GM.tinderIndex];
+    const waPhone = String(c.phone||'').replace(/\D/g,'');
+    const displayPhone = c.phoneE164 || c.phone || 'Sin número';
+
+    nameEl.textContent = c.name || '';
+    originEl.textContent = c.origin || '';
+    phoneEl.textContent = displayPhone;
+    waEl.href = waPhone ? `https://wa.me/${waPhone}` : '#';
+    counterEl.textContent = `${GM.tinderIndex+1}/${GM.filtered.length}`;
+  }
+
+  function renderAll(){
+    filterGM();
+    updateStats();
+    updateProgress();
+    renderView();
+  }
+
+  // Update contact
+  function updateContact(id, field, value){
+    const c = GM.contacts.find(x => x.id === id);
+    if (!c) return;
+
+    if (field === 'phone') {
+      const norm = normalizePhone(value);
+      c.phone = norm.digits || '';
+      c.phoneE164 = norm.e164 || '';
+    } else if (field === 'status') {
+      c.status = value;
+    } else if (field === 'name') {
+      c.name = value;
+      // update alias from name if looks like whaticket name
+      const a = aliasFromWhaticketName(value);
+      if (a) c.alias = a;
+    }
+    c.lastUpdated = new Date().toISOString();
+    saveGM();
+    renderAll();
+  }
+
+  // ---------- Import orchestrator ----------
+  async function processFiles(files, origin, mode, applyOps, fillEl, infoEl){
+    if (!files.length) { showToast('Seleccioná al menos un archivo', 2200); return; }
+
+    const startedAt = performance.now();
+    fillEl.style.width = '0%';
+
+    let totalAdded=0, totalUpdated=0, totalSkipped=0;
+    let opsRows=0, opsActive=0;
+    let sheetUpdated=0, sheetAdded=0, sheetRows=0;
+
+    const total = files.length;
+    for (let i=0;i<files.length;i++){
+      const f = files[i];
+      const name = f.name.toLowerCase();
+      let text = '';
+      try{
+        text = await f.text();
+      }catch(e){
+        console.error(e);
+        showToast('No pude leer un archivo (permiso/encoding)', 2600);
+        continue;
+      }
+
+      if (name.endsWith('.vcf') || name.endsWith('.vcard')) {
+        const res = await importVCFContacts(text, origin);
+        totalAdded += res.added; totalUpdated += res.updated; totalSkipped += res.skipped;
+      } else if (name.endsWith('.csv')) {
+        // detect by header or forced mode
+        const delim = detectDelimiter(text);
+        const lines = String(text||'').replace(/\uFEFF/g,'').replace(/\r\n/g,'\n').replace(/\r/g,'\n')
+          .split('\n').filter(l => l.trim() !== '' && !/^sep=/i.test(l.trim()));
+        const headers = lines.length ? parseCSVLine(lines[0], delim) : [];
+        const headersLower = headers.map(h => h.toLowerCase().trim());
+
+        const autoType = sniffCsvType(headersLower);
+        const finalType = (mode && mode !== 'auto') ? mode : autoType;
+
+        if (finalType === 'ops') {
+          const r = await importOpsAgents(text);
+          opsRows += r.rows;
+          opsActive = r.active;
+          if (applyOps) {
+            const changed = applyOpsToStatuses();
+            // treat as updates (status)
+            totalUpdated += changed;
+          }
+        } else if (finalType === 'sheet') {
+          const r = await importPlanillaBlanca(text);
+          sheetUpdated += r.updated;
+          sheetAdded += r.added;
+          sheetRows += r.rows;
+        } else if (finalType === 'contacts') {
+          const r = await importWhaticketContacts(text, origin);
+          totalAdded += r.added; totalUpdated += r.updated; totalSkipped += r.skipped;
+        } else {
+          const r = await importSimple2Cols(text, origin);
+          totalAdded += r.added; totalUpdated += r.updated; totalSkipped += r.skipped;
+        }
+      } else {
+        totalSkipped++;
+      }
+
+      fillEl.style.width = Math.round(((i+1)/total)*100) + '%';
+      if (infoEl) infoEl.textContent = `Procesando ${i+1}/${total}… (Añadidos: ${totalAdded}, Actualizados: ${totalUpdated})`;
+      await new Promise(r => setTimeout(r, 0));
+    }
+
+    // ensure aliases are normalized
+    for (const c of GM.contacts) {
+      if (c.name && (!c.alias || c.alias === cleanAliasBase(c.alias))) {
+        const a = aliasFromWhaticketName(c.name);
+        if (a) c.alias = a;
+      }
+      if (c.alias) c.alias = cleanAliasBase(c.alias);
+    }
+
+    GM.settings.keepLocal = gmKeepLocal.checked;
+    saveGM();
+
+    const took = Math.round(performance.now() - startedAt);
+    const sec = Math.max(1, Math.round(took/1000));
+
+    const parts = [];
+    if (totalAdded) parts.push(`${totalAdded} añadidos`);
+    if (totalUpdated) parts.push(`${totalUpdated} actualizados`);
+    if (totalSkipped) parts.push(`${totalSkipped} ignorados`);
+    if (opsRows) parts.push(`ops: ${opsRows} filas • ${opsActive} activos`);
+    if (sheetRows) parts.push(`planilla: ${sheetRows} filas • ${sheetUpdated} upd • ${sheetAdded} new`);
+    if (!parts.length) parts.push('sin cambios');
+
+    showToast(`Proceso completado (${sec}s): ${parts.join(' • ')}`, 3400);
+    if (infoEl) infoEl.textContent = `Listo: ${parts.join(' • ')}`;
+
+    renderAll();
+  }
+
+  // ---------- Event wiring ----------
+  gmProcess.onclick = async () => {
+    const files = Array.from(gmFileInput.files || []);
+    const origin = gmOrigin.value.trim() || 'Importación';
+    const mode = gmImportMode.value;
+    const applyOps = gmApplyOpsToStatus.checked;
+    GM.settings.keepLocal = gmKeepLocal.checked;
+
+    gmProcess.disabled = true;
+    gmProcess.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Procesando…';
+    gmFill.style.width = '0%';
+
+    try{
+      await processFiles(files, origin, mode, applyOps, gmFill, gmImportInfo);
+
+      // enter main UI
+      gmUpload.classList.add('gmHidden');
+      gmMain.classList.remove('gmHidden');
+      renderAll();
+    } finally {
+      gmProcess.disabled = false;
+      gmProcess.innerHTML = '<i class="fa-solid fa-play"></i> Procesar y Entrar';
+      gmFileInput.value = '';
+      gmOrigin.value = '';
+    }
+  };
+
+  // Search
+  gmSearch.addEventListener('input', debounce(() => { GM.currentPage=1; renderAll(); }, 150));
+
+  // Stats filter click
+  $all('.gmStatBox').forEach(box => {
+    box.addEventListener('click', () => {
+      $all('.gmStatBox').forEach(b => b.classList.remove('active'));
+      box.classList.add('active');
+      GM.currentFilter = box.dataset.filter;
+      GM.currentPage = 1;
+      renderAll();
+    });
   });
-  await reloadCache();
-  showToast('Cambios aplicados', 1400);
-};
 
-/* ---------- Pagination / filters ---------- */
-document.getElementById('prevPage').onclick = ()=>{ CACHE.page=Math.max(1, CACHE.page-1); render(); };
-document.getElementById('nextPage').onclick = ()=>{
-  const total = Math.max(1, Math.ceil(CACHE.filtered.length / CACHE.pageSize));
-  CACHE.page = Math.min(total, CACHE.page+1);
-  render();
-};
-document.getElementById('pageSize').onchange = (e)=>{ CACHE.pageSize = Number(e.target.value||50); CACHE.page=1; render(); };
-document.getElementById('viewMode').onchange = (e)=>{ CACHE.view = e.target.value; render(); };
-['qSearch','fStatus','fTag'].forEach(id=>{
-  document.getElementById(id).addEventListener('input', ()=>{
-    CACHE.page=1;
-    // debounce
-    clearTimeout(window.__nexoDeb);
-    window.__nexoDeb=setTimeout(render, 120);
+  // View toggle
+  $all('.gmViewBtn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      $all('.gmViewBtn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      GM.currentView = btn.dataset.view;
+      GM.tinderIndex = 0;
+      GM.selected.clear();
+      renderAll();
+    });
   });
-});
 
-document.getElementById('refreshBtn').onclick = ()=>reloadCache();
+  // Pagination click
+  gmPagination.addEventListener('click', (e) => {
+    const b = e.target.closest('.gmPageBtn');
+    if (!b) return;
+    const p = parseInt(b.dataset.page, 10);
+    if (!isNaN(p)) { GM.currentPage = p; renderAll(); }
+  });
 
-/* ---------- Boot ---------- */
-(async ()=>{
-  db = await openDB();
-  const count = await dbCount();
-  document.getElementById('dbState').textContent = `DB: ${count.toLocaleString('es-AR')} contactos`;
-  await reloadCache();
-})().catch(err=>{
-  console.error(err);
-  document.getElementById('dbState').textContent = 'DB: ERROR';
-  showToast('No se pudo abrir IndexedDB', 3000);
-});
+  // Card/List events (delegation)
+  function handleClickInList(e){
+    const card = e.target.closest('[data-id]');
+    if (!card) return;
+    const id = card.dataset.id;
 
-/* Start at home */
-showScreen('home');
+    if (e.target.closest('.gmTrash')) {
+      e.stopPropagation();
+      GM.contacts = GM.contacts.filter(c => c.id !== id);
+      GM.selected.delete(id);
+      saveGM();
+      renderAll();
+      showToast('Contacto eliminado', 1600);
+      return;
+    }
+
+    if (e.target.closest('.gmStatusBtn')) {
+      e.stopPropagation();
+      const status = e.target.closest('.gmStatusBtn').dataset.status;
+      updateContact(id, 'status', status);
+      showToast('Estado actualizado', 1200);
+      return;
+    }
+
+    if (e.target.closest('.gmCheck')) {
+      e.stopPropagation();
+      const checked = e.target.closest('.gmCheck').checked;
+      if (checked) GM.selected.add(id);
+      else GM.selected.delete(id);
+      updateBulkBar();
+      card.classList.toggle('selected', checked);
+      return;
+    }
+
+    const f = e.target.closest('[data-field]');
+    if (f) {
+      const txt = f.textContent || '';
+      navigator.clipboard?.writeText?.(txt).then(() => showToast('Copiado', 900)).catch(()=>showToast('No pude copiar', 1200));
+      return;
+    }
+  }
+  gmCards.addEventListener('click', handleClickInList);
+  gmList.addEventListener('click', handleClickInList);
+
+  // Inline edit on dblclick
+  function handleDblClick(e){
+    const el = e.target.closest('[data-field]');
+    if (!el) return;
+    const card = e.target.closest('[data-id]');
+    if (!card) return;
+    const id = card.dataset.id;
+    const field = el.dataset.field;
+    if (el.querySelector('input')) return;
+
+    const c = GM.contacts.find(x => x.id === id);
+    if (!c) return;
+
+    const original = el.textContent;
+    const prefill = (field === 'phone') ? (c.phoneE164 || c.phone || original) : original;
+
+    el.innerHTML = `<input class="gmSearchInput" style="padding:10px 12px; border-radius:12px;" value="${prefill.replace(/"/g,'&quot;')}">`;
+    const input = el.querySelector('input');
+    input.focus();
+    input.select();
+
+    const save = () => {
+      const v = input.value.trim();
+      el.textContent = original;
+      if (v && v !== prefill) updateContact(id, field, v);
+    };
+    input.addEventListener('blur', save);
+    input.addEventListener('keydown', (ev) => {
+      if (ev.key === 'Enter') input.blur();
+      if (ev.key === 'Escape') { el.textContent = original; }
+    });
+  }
+  gmCards.addEventListener('dblclick', handleDblClick);
+  gmList.addEventListener('dblclick', handleDblClick);
+
+  // Select all page
+  document.getElementById('gmSelectAll').addEventListener('change', (e) => {
+    const checked = e.target.checked;
+    const start = (GM.currentPage-1)*GM.itemsPerPage;
+    const page = GM.filtered.slice(start, start+GM.itemsPerPage);
+    page.forEach(c => { if (checked) GM.selected.add(c.id); else GM.selected.delete(c.id); });
+    renderView();
+    updateBulkBar();
+  });
+
+  // Tinder buttons
+  document.getElementById('gmTinderNext').onclick = () => { GM.tinderIndex++; renderTinder(); };
+  document.getElementById('gmTinderBack').onclick = () => {
+    if (!GM.filtered.length) return;
+    GM.tinderIndex = (GM.tinderIndex - 1 + GM.filtered.length) % GM.filtered.length;
+    renderTinder();
+  };
+  $all('#gmTinder [data-status]').forEach(b => {
+    b.onclick = () => {
+      if (!GM.filtered.length) return;
+      const c = GM.filtered[GM.tinderIndex];
+      updateContact(c.id, 'status', b.dataset.status);
+      GM.tinderIndex++;
+      renderTinder();
+    };
+  });
+
+  // Bulk actions
+  document.getElementById('gmBulkCancel').onclick = () => { GM.selected.clear(); renderAll(); };
+  document.getElementById('gmBulkDelete').onclick = () => {
+    const n = GM.selected.size;
+    if (!n) return;
+    GM.contacts = GM.contacts.filter(c => !GM.selected.has(c.id));
+    GM.selected.clear();
+    saveGM();
+    renderAll();
+    showToast(`${n} eliminados`, 1800);
+  };
+  gmBulkStatus.onchange = () => {
+    const status = gmBulkStatus.value;
+    if (!status || !GM.selected.size) return;
+    GM.selected.forEach(id => {
+      const c = GM.contacts.find(x => x.id === id);
+      if (c) { c.status = status; c.lastUpdated = new Date().toISOString(); }
+    });
+    const n = GM.selected.size;
+    GM.selected.clear();
+    saveGM();
+    renderAll();
+    showToast(`${n} actualizados`, 1600);
+    gmBulkStatus.value = '';
+  };
+
+  // Export modal
+  document.getElementById('gmExport').onclick = () => {
+    gmExportFilteredCount.textContent = GM.filtered.length.toLocaleString('es-AR') + ' contactos';
+    gmExportAllCount.textContent = GM.contacts.length.toLocaleString('es-AR') + ' contactos';
+    gmExportModal.classList.add('active');
+  };
+  document.getElementById('gmExportCancel').onclick = () => gmExportModal.classList.remove('active');
+
+  function pickSelected(gridSel, attr){
+    const sel = $all(gridSel + ' .opt.selected');
+    return sel.length ? sel[0].getAttribute(attr) : '';
+  }
+  $all('#gmExportTypeGrid .opt').forEach(o => o.onclick = () => {
+    $all('#gmExportTypeGrid .opt').forEach(x => x.classList.remove('selected'));
+    o.classList.add('selected');
+  });
+  $all('#gmExportFmtGrid .opt').forEach(o => o.onclick = () => {
+    $all('#gmExportFmtGrid .opt').forEach(x => x.classList.remove('selected'));
+    o.classList.add('selected');
+  });
+
+  function exportCSVFull(list){
+    let csv = "Nombre,Alias,Teléfono,Teléfono_E164,Email,Tags,Metadata,Origen,Estado,Fecha Actualización\n";
+    list.forEach(c => {
+      const row = [
+        csvEscape(c.name||''),
+        csvEscape(c.alias||''),
+        csvEscape(c.phone||''),
+        csvEscape(c.phoneE164||''),
+        csvEscape(c.email||''),
+        csvEscape(c.tags||''),
+        csvEscape(c.metadata||''),
+        csvEscape(c.origin||''),
+        csvEscape(c.status||''),
+        csvEscape((c.lastUpdated ? new Date(c.lastUpdated).toISOString() : ''))
+      ];
+      csv += row.join(',') + '\n';
+    });
+    downloadFile(csv, `contactos_completo_${new Date().toISOString().slice(0,10)}.csv`, 'text/csv;charset=utf-8;');
+  }
+
+  function exportWhaticket(list){
+    let csv = "name,number\n";
+    list.forEach(c => {
+      const name = (c.name || '').trim() || (c.alias || '');
+      const num = (c.phoneE164 || '').trim() || (normalizePhone(c.phone||'').e164 || '');
+      if (!num) return;
+      csv += `${csvEscape(name)},${csvEscape(num)}\n`;
+    });
+    downloadFile(csv, `contactos_whaticket_${new Date().toISOString().slice(0,10)}.csv`, 'text/csv;charset=utf-8;');
+  }
+
+  function exportVCF(list){
+    let vcf = '';
+    list.forEach(c => {
+      const displayName = (c.name || '').trim() || 'Sin nombre';
+      const tel = (c.phoneE164 || '').trim() || (normalizePhone(c.phone||'').e164 || '');
+      vcf += `BEGIN:VCARD\nVERSION:3.0\nFN:${displayName}\n`;
+      if (tel) vcf += `TEL;TYPE=CELL:${tel}\n`;
+      vcf += `NOTE:Origen: ${(c.origin||'')} • Estado: ${(c.status||'')}\nEND:VCARD\n\n`;
+    });
+    downloadFile(vcf, `contactos_${new Date().toISOString().slice(0,10)}.vcf`, 'text/vcard;charset=utf-8');
+  }
+
+  function exportPlanilla(list){
+    // EXACTO formato planilla, con ACTIVO => JUGANDO, NO ACTIVO => A CONTACTAR.
+    const headers =
+`usuarios,estado de revision,,estado actual,"VISTO, RESPONDIDO?",RECUPERADO,TURNO DE LAS CARGAS,interesado en jugar?,ya contactados,recuperados!,actualmente cargando,TURNO MAÑANA,TURNO TARDE,TURNO NOCHE,contactos a borrar\n`;
+
+    const estado = (c) => {
+      if (c.status === 'jugando') return 'JUGANDO';
+      if (c.status === 'contactado') return 'MENSAJE ENVIADO';
+      if (c.status === 'sin wsp') return 'NO ESTA EN WSP';
+      if (c.status === 'no interesado') return 'ELIMINADO';
+      return 'A CONTACTAR';
+    };
+
+    // columnas auxiliares
+    const rows = list.slice();
+    const yaContactados = rows.filter(c => c.status === 'contactado').map(c => c.alias || c.name);
+    const recuperados = rows.filter(c => c.status === 'jugando').map(c => c.alias || c.name);
+    const actualmenteCargando = rows.filter(c => c.status === 'jugando').map(c => c.alias || c.name);
+    const turnoManana = [];
+    const turnoTarde = [];
+    const turnoNoche = [];
+    const aBorrar = rows.filter(c => c.status === 'no interesado').map(c => c.alias || c.name);
+
+    const maxLength = Math.max(rows.length, yaContactados.length, recuperados.length, actualmenteCargando.length, aBorrar.length);
+
+    let csv = headers;
+    for (let i=0;i<maxLength;i++){
+      const c = rows[i];
+      const usuario = c ? (c.alias || c.name || '') : '';
+      const est = c ? estado(c) : '';
+
+      const line = [
+        c ? csvEscape(usuario) : '',
+        c ? csvEscape(est) : '',
+        '',
+        c ? csvEscape(est) : '',
+        csvEscape('NO'),
+        csvEscape('NO'),
+        '',
+        csvEscape('NO'),
+        csvEscape(yaContactados[i] || ''),
+        csvEscape(recuperados[i] || ''),
+        csvEscape(actualmenteCargando[i] || ''),
+        csvEscape(turnoManana[i] || ''),
+        csvEscape(turnoTarde[i] || ''),
+        csvEscape(turnoNoche[i] || ''),
+        csvEscape(aBorrar[i] || '')
+      ].join(',');
+      csv += line + '\n';
+    }
+    downloadFile(csv, `planilla_exportada_${new Date().toISOString().slice(0,10)}.csv`, 'text/csv;charset=utf-8;');
+  }
+
+  document.getElementById('gmExportDo').onclick = () => {
+    const type = pickSelected('#gmExportTypeGrid', 'data-type') || 'filtered';
+    const fmt = pickSelected('#gmExportFmtGrid', 'data-format') || 'excel';
+    const list = (type === 'all') ? GM.contacts : GM.filtered;
+
+    if (fmt === 'excel') exportCSVFull(list);
+    else if (fmt === 'whaticket') exportWhaticket(list);
+    else if (fmt === 'vcf') exportVCF(list);
+    else if (fmt === 'sheet') exportPlanilla(GM.contacts); // sheet suele ser total
+    gmExportModal.classList.remove('active');
+    showToast('Exportado', 1400);
+  };
+
+  // Clear / Add more
+  document.getElementById('gmClear').onclick = () => {
+    GM.contacts = [];
+    GM.filtered = [];
+    GM.selected.clear();
+    GM.currentPage = 1;
+    GM.currentFilter = 'all';
+    GM.activeAliases = new Set();
+    clearGMStorage();
+    showToast('Datos borrados', 1600);
+    // back to upload screen
+    gmMain.classList.add('gmHidden');
+    gmUpload.classList.remove('gmHidden');
+    renderAll();
+  };
+
+  document.getElementById('gmImportMore').onclick = () => {
+    gmAddModal.classList.add('active');
+    gmMoreInput.value = '';
+    gmMoreOrigin.value = '';
+    gmMoreFill.style.width = '0%';
+  };
+  document.getElementById('gmMoreCancel').onclick = () => gmAddModal.classList.remove('active');
+
+  document.getElementById('gmMoreProcess').onclick = async () => {
+    const files = Array.from(gmMoreInput.files || []);
+    const origin = gmMoreOrigin.value.trim() || 'Importación';
+    const mode = gmMoreMode.value;
+    const applyOps = gmMoreApplyOps.checked;
+
+    document.getElementById('gmMoreProcess').disabled = true;
+    document.getElementById('gmMoreProcess').innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Procesando…';
+
+    try{
+      await processFiles(files, origin, mode, applyOps, gmMoreFill, null);
+      gmAddModal.classList.remove('active');
+    } finally {
+      document.getElementById('gmMoreProcess').disabled = false;
+      document.getElementById('gmMoreProcess').innerHTML = '<i class="fa-solid fa-play"></i> Procesar';
+    }
+  };
+
+  /* ---------- Boot ---------- */
+  // Load previous session if any
+  loadGM();
+  GM.settings.keepLocal = true;
+
+  if (GM.contacts.length) {
+    // Jump straight into main UI
+    gmUpload.classList.add('gmHidden');
+    gmMain.classList.remove('gmHidden');
+  }
+  renderAll();
+
+})();
 </script>
 </body>
 </html>
+"""
+pathlib.Path(out_path).write_text(html, encoding="utf-8")
+out_path
